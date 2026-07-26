@@ -1,9 +1,9 @@
 import { defineConfig } from 'astro/config';
-import vitewp from './src/astro.ts';
+import astropress from './src/astro.ts';
 
 export default defineConfig({
   output: 'server',
-  integrations: [vitewp()],
+  integrations: [astropress()],
   vite: {
     server: {
       ws: {

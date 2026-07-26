@@ -1,6 +1,6 @@
-# ViteWP
+# AstroPress
 
-ViteWP is an Astro-first WordPress development framework.
+AstroPress is an Astro-first WordPress development framework.
 
 One entrypoint for everything you need, no fuzz and no magic.
 
@@ -17,11 +17,11 @@ One entrypoint for everything you need, no fuzz and no magic.
 mkdir my-site
 cd my-site
 npm init -y
-npx vite-wp init
+npx astropress init
 cp .env.example .env
 ```
 
-`vite-wp init` creates the starter files, adds the needed package dependencies, and runs install.
+`astropress init` creates the starter files, adds the needed package dependencies, and runs install.
 
 Edit `.env` with your database credentials, run `npm run dev`, wait for the initial configuration and then open:
 
@@ -34,12 +34,12 @@ If the database is empty, go to `/wp-admin/` and complete the WordPress installe
 ## Commands
 
 ```bash
-npm run dev      # Start the local ViteWP runtime
+npm run dev      # Start the local AstroPress runtime
 npm run doctor   # Check PHP, Composer, WordPress, config, and environment
 npm run types    # Generate WordPress-derived TypeScript types
 npm run check    # Run Astro type checking
-npx vite-wp composer install  # Run Composer in the project
-npx vite-wp wp plugin list    # Run WP-CLI when installed
+npx astropress composer install  # Run Composer in the project
+npx astropress wp plugin list    # Run WP-CLI when installed
 ```
 
 For internal runtime diagnostics:
@@ -53,11 +53,11 @@ npm run dev -- --verbose
 ```txt
 my-site/
   astro.config.mjs
-  vitewp.config.ts
+  astropress.config.ts
   composer.json
   .env
 
-  .vitewp/
+  .astropress/
     types.d.ts             # generated WordPress types
 
   src/
@@ -67,15 +67,15 @@ my-site/
   wordpress/
     public/              # Composer-installed WordPress core
     content/
-      mu-plugins/        # ViteWP bridge is generated here
-      themes/            # ViteWP placeholder theme is generated here
+      mu-plugins/        # AstroPress bridge is generated here
+      themes/            # AstroPress placeholder theme is generated here
       plugins/
       uploads/
 ```
 
 ## Templates
 
-ViteWP ships default templates from the package. Create files in `src/templates` only when you want to override them.
+AstroPress ships default templates from the package. Create files in `src/templates` only when you want to override them.
 
 Examples:
 
@@ -110,12 +110,12 @@ Available generated types include `WpPageTemplateProps`, `WpSingleTemplateProps`
 Custom post types and taxonomies can be narrowed with a generic, such as
 `WpSingleTemplateProps<'product'>`.
 
-`npm run types` writes these project-specific types to `.vitewp/types.d.ts`.
-ViteWP exposes that generated file through the `wp-types` alias.
+`npm run types` writes these project-specific types to `.astropress/types.d.ts`.
+AstroPress exposes that generated file through the `wp-types` alias.
 
 ## WordPress data
 
-ViteWP uses Astro Live Collections for WordPress data:
+AstroPress uses Astro Live Collections for WordPress data:
 
 ```ts
 import { getLiveCollection, getLiveEntry } from 'astro:content';
@@ -129,7 +129,7 @@ After `npm run dev` or `npm run check`, collection names and filters should have
 
 ## Menus
 
-Register WordPress menu positions in `vitewp.config.ts`:
+Register WordPress menu positions in `astropress.config.ts`:
 
 ```ts
 export default defineConfig({
@@ -145,7 +145,7 @@ export default defineConfig({
 Then assign menus to those locations in WordPress admin and fetch them by location:
 
 ```ts
-import { getMenuByLocation } from 'vite-wp/wordpress';
+import { getMenuByLocation } from 'astropress/wordpress';
 
 const menu = await getMenuByLocation('primary');
 ```
@@ -156,7 +156,7 @@ Astro templates can ask the internal WordPress runtime to render real WordPress 
 
 ```astro
 ---
-import { createHooks } from 'vite-wp/wordpress';
+import { createHooks } from 'astropress/wordpress';
 
 const hooks = createHooks(Astro.props);
 const head = await hooks.action('wp_head');
@@ -169,7 +169,7 @@ const content = await hooks.filter('the_content', Astro.props.content);
 
 ## Blocks and plugin assets
 
-ViteWP discovers block metadata from `src/blocks/**/block.json` and bundles WordPress-side JS/TS and optional CSS.
+AstroPress discovers block metadata from `src/blocks/**/block.json` and bundles WordPress-side JS/TS and optional CSS.
 
 ```txt
 src/blocks/hero/block.json

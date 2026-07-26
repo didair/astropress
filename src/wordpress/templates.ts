@@ -79,7 +79,7 @@ export interface TemplateRouteInfo {
   page: number | null;
   totalPages: number | null;
   template: string | null;
-  templateSource: 'project' | 'vite-wp' | null;
+  templateSource: 'project' | 'astropress' | null;
   candidateTemplates: string[];
 }
 

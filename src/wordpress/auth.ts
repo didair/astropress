@@ -1,8 +1,8 @@
 import {
   forwardResponseCookies,
   getRequestContext,
-  type ViteWpAstroLike,
-  type ViteWpRequestContext,
+  type AstroPressAstroLike,
+  type AstroPressRequestContext,
 } from './context.js';
 import { getWordPressBaseUrl } from './client.js';
 
@@ -124,32 +124,32 @@ export interface WpAuthMessageResult {
   message: string;
 }
 
-export class ViteWpAuthRequiredError extends Error {
+export class AstroPressAuthRequiredError extends Error {
   loginUrl: string;
   response: Response;
 
   constructor(loginUrl: string) {
     super(`Authentication required. Redirect the request to ${loginUrl}.`);
-    this.name = 'ViteWpAuthRequiredError';
+    this.name = 'AstroPressAuthRequiredError';
     this.loginUrl = loginUrl;
     this.response = Response.redirect(loginUrl, 302);
   }
 }
 
-export class ViteWpAuthActionError extends Error {
+export class AstroPressAuthActionError extends Error {
   status: number;
   code: string;
 
   constructor(status: number, code: string, message: string) {
     super(message);
-    this.name = 'ViteWpAuthActionError';
+    this.name = 'AstroPressAuthActionError';
     this.status = status;
     this.code = code;
   }
 }
 
 export async function getAuthContext(
-  input?: ViteWpAstroLike | AuthContextOptions,
+  input?: AstroPressAstroLike | AuthContextOptions,
   options: AuthContextOptions = {},
 ): Promise<WpAuthContext> {
   const { context, authOptions } = resolveAuthInput(input, options);
@@ -167,48 +167,48 @@ export async function getAuthContext(
   return auth;
 }
 
-export async function getCurrentUser(input?: ViteWpAstroLike | AuthContextOptions): Promise<WpCurrentUser | null> {
+export async function getCurrentUser(input?: AstroPressAstroLike | AuthContextOptions): Promise<WpCurrentUser | null> {
   return getAuthContext(input).then((auth) => auth.user);
 }
 
-export async function isLoggedIn(input?: ViteWpAstroLike | AuthContextOptions): Promise<boolean> {
+export async function isLoggedIn(input?: AstroPressAstroLike | AuthContextOptions): Promise<boolean> {
   return getAuthContext(input).then((auth) => auth.loggedIn);
 }
 
-export async function requireUser(input?: ViteWpAstroLike | AuthContextOptions): Promise<WpCurrentUser> {
+export async function requireUser(input?: AstroPressAstroLike | AuthContextOptions): Promise<WpCurrentUser> {
   const auth = await getAuthContext(input);
 
   if (!auth.user) {
-    throw new ViteWpAuthRequiredError(auth.loginUrl);
+    throw new AstroPressAuthRequiredError(auth.loginUrl);
   }
 
   return auth.user;
 }
 
 export async function getNonce(
-  input?: ViteWpAstroLike | AuthContextOptions,
+  input?: AstroPressAstroLike | AuthContextOptions,
   options: AuthContextOptions = {},
 ): Promise<WpNonce> {
   return getAuthContext(input, options).then((auth) => auth.nonce);
 }
 
-export async function loginUrl(input?: ViteWpAstroLike | AuthContextOptions): Promise<string> {
+export async function loginUrl(input?: AstroPressAstroLike | AuthContextOptions): Promise<string> {
   return getAuthContext(input).then((auth) => auth.loginUrl);
 }
 
-export async function logoutUrl(input?: ViteWpAstroLike | AuthContextOptions): Promise<string> {
+export async function logoutUrl(input?: AstroPressAstroLike | AuthContextOptions): Promise<string> {
   return getAuthContext(input).then((auth) => auth.logoutUrl);
 }
 
 export async function signInWithPassword(
   credentials: WpPasswordCredentials,
-  input?: ViteWpAstroLike,
+  input?: AstroPressAstroLike,
 ): Promise<WpAuthContext> {
   const context = getRequestContext(input);
   const login = credentials.login ?? credentials.email ?? credentials.username;
 
   if (!login) {
-    throw new ViteWpAuthActionError(400, 'missing_login', 'Email or username is required.');
+    throw new AstroPressAuthActionError(400, 'missing_login', 'Email or username is required.');
   }
 
   const auth = await postAuthAction<WpAuthContext>(context, 'login', {
@@ -227,7 +227,7 @@ export const loginWithPassword = signInWithPassword;
 
 export async function registerUser(
   registration: WpUserRegistration,
-  input?: ViteWpAstroLike,
+  input?: AstroPressAstroLike,
 ): Promise<WpUserRegistrationResult> {
   const context = getRequestContext(input);
   const result = await postAuthAction<WpUserRegistrationResult>(context, 'register', {
@@ -243,7 +243,7 @@ export async function registerUser(
 
 export const registerWithPassword = registerUser;
 
-export async function signOut(input?: ViteWpAstroLike): Promise<WpAuthContext> {
+export async function signOut(input?: AstroPressAstroLike): Promise<WpAuthContext> {
   const context = getRequestContext(input);
   const auth = await postAuthAction<WpAuthContext>(context, 'logout', {
     redirectTo: context.url.pathname,
@@ -258,13 +258,13 @@ export const logout = signOut;
 
 export async function requestPasswordReset(
   request: WpPasswordResetRequest,
-  input?: ViteWpAstroLike,
+  input?: AstroPressAstroLike,
 ): Promise<WpAuthMessageResult> {
   const context = getRequestContext(input);
   const login = request.login ?? request.email ?? request.username;
 
   if (!login) {
-    throw new ViteWpAuthActionError(400, 'missing_login', 'Email or username is required.');
+    throw new AstroPressAuthActionError(400, 'missing_login', 'Email or username is required.');
   }
 
   return postAuthAction<WpAuthMessageResult>(context, 'request_password_reset', { login });
@@ -272,12 +272,12 @@ export async function requestPasswordReset(
 
 export const sendPasswordResetEmail = requestPasswordReset;
 
-export async function resetPassword(reset: WpPasswordReset, input?: ViteWpAstroLike): Promise<WpAuthMessageResult> {
+export async function resetPassword(reset: WpPasswordReset, input?: AstroPressAstroLike): Promise<WpAuthMessageResult> {
   const context = getRequestContext(input);
   return postAuthAction<WpAuthMessageResult>(context, 'reset_password', { ...reset });
 }
 
-function resolveAuthInput(input: ViteWpAstroLike | AuthContextOptions | undefined, options: AuthContextOptions) {
+function resolveAuthInput(input: AstroPressAstroLike | AuthContextOptions | undefined, options: AuthContextOptions) {
   if (isAstroLike(input)) {
     return {
       context: getRequestContext(input),
@@ -291,20 +291,20 @@ function resolveAuthInput(input: ViteWpAstroLike | AuthContextOptions | undefine
   };
 }
 
-function isAstroLike(input: unknown): input is ViteWpAstroLike {
+function isAstroLike(input: unknown): input is AstroPressAstroLike {
   return Boolean(input && typeof input === 'object' && 'request' in input);
 }
 
-async function fetchAuthContext(context: ViteWpRequestContext, action: string, redirectTo: string) {
-  const phpUrl = process.env.VITEWP_PHP_URL;
-  const secret = process.env.VITEWP_INTERNAL_SECRET;
+async function fetchAuthContext(context: AstroPressRequestContext, action: string, redirectTo: string) {
+  const phpUrl = process.env.ASTROPRESS_PHP_URL;
+  const secret = process.env.ASTROPRESS_INTERNAL_SECRET;
 
   if (!phpUrl || !secret) {
-    throw new Error('WordPress auth helpers are only available during ViteWP SSR. Start the site with `vite-wp dev`.');
+    throw new Error('WordPress auth helpers are only available during AstroPress SSR. Start the site with `astropress dev`.');
   }
 
   const url = new URL(`${phpUrl.replace(/\/$/, '')}/index.php`);
-  url.searchParams.set('vitewp_internal_auth', '1');
+  url.searchParams.set('astropress_internal_auth', '1');
   url.searchParams.set('action', action);
   url.searchParams.set('redirect_to', new URL(redirectTo, context.url).toString());
 
@@ -320,15 +320,15 @@ async function fetchAuthContext(context: ViteWpRequestContext, action: string, r
   return response.json() as Promise<WpAuthContext>;
 }
 
-async function postAuthAction<T>(context: ViteWpRequestContext, action: string, body: Record<string, unknown>): Promise<T> {
-  const phpUrl = process.env.VITEWP_PHP_URL;
-  const secret = process.env.VITEWP_INTERNAL_SECRET;
+async function postAuthAction<T>(context: AstroPressRequestContext, action: string, body: Record<string, unknown>): Promise<T> {
+  const phpUrl = process.env.ASTROPRESS_PHP_URL;
+  const secret = process.env.ASTROPRESS_INTERNAL_SECRET;
 
   if (!phpUrl || !secret) {
-    throw new Error('WordPress auth helpers are only available during ViteWP SSR. Start the site with `vite-wp dev`.');
+    throw new Error('WordPress auth helpers are only available during AstroPress SSR. Start the site with `astropress dev`.');
   }
 
-  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?vitewp_internal_auth_action=1`, {
+  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?astropress_internal_auth_action=1`, {
     method: 'POST',
     headers: {
       ...authRequestHeaders(context, secret),
@@ -339,7 +339,7 @@ async function postAuthAction<T>(context: ViteWpRequestContext, action: string, 
 
   if (!response.ok) {
     const payload = await readAuthActionError(response);
-    throw new ViteWpAuthActionError(response.status, payload.code, payload.message);
+    throw new AstroPressAuthActionError(response.status, payload.code, payload.message);
   }
 
   forwardResponseCookies(response, context);
@@ -361,16 +361,16 @@ async function readAuthActionError(response: Response) {
   }
 }
 
-export function authRequestHeaders(context: ViteWpRequestContext, secret: string): HeadersInit {
+export function authRequestHeaders(context: AstroPressRequestContext, secret: string): HeadersInit {
   const headers: Record<string, string> = {
-    'x-vitewp-internal-secret': secret,
+    'x-astropress-internal-secret': secret,
   };
 
   if (context.cookie) {
     headers.cookie = context.cookie;
   }
 
-  const publicUrl = process.env.VITEWP_PUBLIC_URL ?? getWordPressBaseUrl();
+  const publicUrl = process.env.ASTROPRESS_PUBLIC_URL ?? getWordPressBaseUrl();
 
   if (publicUrl) {
     const url = new URL(publicUrl);

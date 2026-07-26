@@ -1,8 +1,8 @@
-import { loadViteWpConfig } from '../config.js';
+import { loadAstroPressConfig } from '../config.js';
 import { runComposer } from '../runtime/composer.js';
 
 export async function runComposerCommand(args = process.argv.slice(3)) {
-  const config = await loadViteWpConfig();
+  const config = await loadAstroPressConfig();
   const composerArgs = args.length > 0 ? args : ['install'];
 
   try {

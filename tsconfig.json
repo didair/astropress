@@ -11,7 +11,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
-      "wp-types": ["./.vitewp/types.d.ts"]
+      "wp-types": ["./.astropress/types.d.ts"]
     },
     "noUnusedLocals": true,
     "noUnusedParameters": true,

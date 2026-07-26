@@ -1,6 +1,6 @@
 <?php
 
-final class ViteWP_Bridge_Content
+final class AstroPress_Bridge_Content
 {
     public static function postTypes(): array
     {
@@ -11,9 +11,9 @@ final class ViteWP_Bridge_Content
         foreach ($post_types as $post_type) {
             $items[] = [
                 'name' => $post_type->name,
-                'restBase' => ViteWP_Bridge_Content::restBase($post_type),
+                'restBase' => AstroPress_Bridge_Content::restBase($post_type),
                 'archive' => (bool) $post_type->has_archive,
-                'archiveSlug' => $post_type->has_archive ? ViteWP_Bridge_Content::archive_slug($post_type) : null,
+                'archiveSlug' => $post_type->has_archive ? AstroPress_Bridge_Content::archive_slug($post_type) : null,
                 'label' => $post_type->label,
                 'singularLabel' => $post_type->labels->singular_name,
                 'taxonomies' => array_values(get_object_taxonomies($post_type->name)),
@@ -72,10 +72,10 @@ final class ViteWP_Bridge_Content
         parse_str($parts['query'] ?? '', $query);
 
         $path = '/' . trim($parts['path'] ?? '/', '/');
-        [$path, $page] = ViteWP_Bridge_Content::stripPagination($path);
+        [$path, $page] = AstroPress_Bridge_Content::stripPagination($path);
         $trimmed_path = trim($path, '/');
 
-        $search = ViteWP_Bridge_Content::searchQuery($trimmed_path, $query);
+        $search = AstroPress_Bridge_Content::searchQuery($trimmed_path, $query);
         if ($search !== null) {
             return new WP_REST_Response([
                 'found' => true,
@@ -90,7 +90,7 @@ final class ViteWP_Bridge_Content
         }
 
         if ($path === '/') {
-            return ViteWP_Bridge_Content::resolveHome($page);
+            return AstroPress_Bridge_Content::resolveHome($page);
         }
 
         $post_id = url_to_postid(home_url($path));
@@ -107,26 +107,26 @@ final class ViteWP_Bridge_Content
                     'id' => $post->ID,
                     'slug' => $post->post_name,
                     'postType' => $post->post_type,
-                    'restBase' => ViteWP_Bridge_Content::restBase($post_type),
+                    'restBase' => AstroPress_Bridge_Content::restBase($post_type),
                     'isFrontPage' => false,
                     'isPostsPage' => (int) get_option('page_for_posts') === $post->ID,
                 ]);
             }
         }
 
-        $single = ViteWP_Bridge_Content::resolveSingleBySlug($path);
+        $single = AstroPress_Bridge_Content::resolveSingleBySlug($path);
 
         if ($single) {
             return new WP_REST_Response($single);
         }
 
-        $taxonomy = ViteWP_Bridge_Content::resolveTaxonomyArchive($path, $page);
+        $taxonomy = AstroPress_Bridge_Content::resolveTaxonomyArchive($path, $page);
 
         if ($taxonomy) {
             return new WP_REST_Response($taxonomy);
         }
 
-        $archive = ViteWP_Bridge_Content::resolvePostTypeArchive($path, $page);
+        $archive = AstroPress_Bridge_Content::resolvePostTypeArchive($path, $page);
 
         if ($archive) {
             return new WP_REST_Response($archive);
@@ -165,7 +165,7 @@ final class ViteWP_Bridge_Content
             'slug' => '',
             'postType' => 'post',
             'restBase' => 'posts',
-            'title' => ViteWP_Bridge_Content::postsArchiveTitle(),
+            'title' => AstroPress_Bridge_Content::postsArchiveTitle(),
             'page' => $page,
         ]);
     }
@@ -202,7 +202,7 @@ final class ViteWP_Bridge_Content
             'id' => $post->ID,
             'slug' => $post->post_name,
             'postType' => $post->post_type,
-            'restBase' => ViteWP_Bridge_Content::restBase($post_type),
+            'restBase' => AstroPress_Bridge_Content::restBase($post_type),
             'isFrontPage' => (int) get_option('page_on_front') === $post->ID,
             'isPostsPage' => (int) get_option('page_for_posts') === $post->ID,
         ];
@@ -246,7 +246,7 @@ final class ViteWP_Bridge_Content
                 continue;
             }
 
-            $archive_slug = ViteWP_Bridge_Content::archive_slug($post_type);
+            $archive_slug = AstroPress_Bridge_Content::archive_slug($post_type);
 
             if ($trimmed_path === $archive_slug) {
                 return [
@@ -254,7 +254,7 @@ final class ViteWP_Bridge_Content
                     'kind' => 'postTypeArchive',
                     'slug' => $archive_slug,
                     'postType' => $post_type->name,
-                    'restBase' => ViteWP_Bridge_Content::restBase($post_type),
+                    'restBase' => AstroPress_Bridge_Content::restBase($post_type),
                     'title' => $post_type->labels->name,
                     'page' => $page,
                 ];
@@ -277,7 +277,7 @@ final class ViteWP_Bridge_Content
         $term_slug = end($segments);
 
         foreach (get_taxonomies(['public' => true], 'objects') as $taxonomy) {
-            $base = ViteWP_Bridge_Content::taxonomyBase($taxonomy);
+            $base = AstroPress_Bridge_Content::taxonomyBase($taxonomy);
             $matches_base = count($segments) >= 2 && $segments[0] === $base;
             $matches_direct = count($segments) === 1;
 
@@ -299,7 +299,7 @@ final class ViteWP_Bridge_Content
                 'taxonomyRestBase' => $taxonomy->rest_base ?: $taxonomy->name,
                 'termId' => $term->term_id,
                 'termName' => $term->name,
-                'postType' => ViteWP_Bridge_Content::taxonomyPrimaryPostType($taxonomy),
+                'postType' => AstroPress_Bridge_Content::taxonomyPrimaryPostType($taxonomy),
                 'restBase' => 'posts',
                 'title' => $term->name,
                 'page' => $page,
@@ -341,7 +341,7 @@ final class ViteWP_Bridge_Content
         $query = new WP_Query($args);
 
         return [
-            'items' => array_map('ViteWP_Bridge_Content::postItem', $query->posts),
+            'items' => array_map('AstroPress_Bridge_Content::postItem', $query->posts),
             'page' => $page,
             'perPage' => $per_page,
             'total' => (int) $query->found_posts,
@@ -352,7 +352,7 @@ final class ViteWP_Bridge_Content
     public static function postItem(WP_Post $post): array
     {
 
-        $featured_media = ViteWP_Bridge_Content::featuredMedia($post);
+        $featured_media = AstroPress_Bridge_Content::featuredMedia($post);
 
         return [
             'id' => $post->ID,
@@ -364,9 +364,9 @@ final class ViteWP_Bridge_Content
             'excerpt' => ['rendered' => apply_filters('the_excerpt', get_the_excerpt($post))],
             'date' => get_post_time(DATE_ATOM, false, $post),
             'modified' => get_post_modified_time(DATE_ATOM, false, $post),
-            'acf' => ViteWP_Bridge_Content::acfFields($post),
-            'taxonomies' => ViteWP_Bridge_Content::postTaxonomyIds($post),
-            'terms' => ViteWP_Bridge_Content::postTerms($post),
+            'acf' => AstroPress_Bridge_Content::acfFields($post),
+            'taxonomies' => AstroPress_Bridge_Content::postTaxonomyIds($post),
+            'terms' => AstroPress_Bridge_Content::postTerms($post),
             'featuredMediaId' => (int) get_post_thumbnail_id($post),
             'featuredMedia' => $featured_media,
         ];
@@ -381,7 +381,7 @@ final class ViteWP_Bridge_Content
             return null;
         }
 
-        return ViteWP_Bridge_Content::mediaItem($attachment_id);
+        return AstroPress_Bridge_Content::mediaItem($attachment_id);
     }
 
     public static function mediaItem(int $attachment_id): ?array
@@ -444,7 +444,7 @@ final class ViteWP_Bridge_Content
 
         $taxonomies = [];
 
-        foreach (ViteWP_Bridge_Content::postTaxonomyObjects($post) as $taxonomy) {
+        foreach (AstroPress_Bridge_Content::postTaxonomyObjects($post) as $taxonomy) {
             $terms = get_the_terms($post, $taxonomy->name);
 
             if (! is_array($terms)) {
@@ -466,7 +466,7 @@ final class ViteWP_Bridge_Content
 
         $taxonomies = [];
 
-        foreach (ViteWP_Bridge_Content::postTaxonomyObjects($post) as $taxonomy) {
+        foreach (AstroPress_Bridge_Content::postTaxonomyObjects($post) as $taxonomy) {
             $terms = get_the_terms($post, $taxonomy->name);
 
             if (! is_array($terms)) {
@@ -474,7 +474,7 @@ final class ViteWP_Bridge_Content
                 continue;
             }
 
-            $taxonomies[$taxonomy->name] = array_map('ViteWP_Bridge_Content::termItem', array_values($terms));
+            $taxonomies[$taxonomy->name] = array_map('AstroPress_Bridge_Content::termItem', array_values($terms));
         }
 
         return $taxonomies;
@@ -516,7 +516,7 @@ final class ViteWP_Bridge_Content
                 'id' => $menu->term_id,
                 'slug' => $menu->slug,
                 'name' => $menu->name,
-                'items' => array_map('ViteWP_Bridge_Content::menuItem', $items),
+                'items' => array_map('AstroPress_Bridge_Content::menuItem', $items),
             ];
         }
 

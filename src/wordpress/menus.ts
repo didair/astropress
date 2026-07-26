@@ -26,7 +26,7 @@ export interface WpMenusPayload {
 }
 
 export async function getMenus(): Promise<WpMenusPayload> {
-  const response = await fetch(`${getWordPressBaseUrl()}/wp-json/vitewp/v1/menus`);
+  const response = await fetch(`${getWordPressBaseUrl()}/wp-json/astropress/v1/menus`);
 
   if (!response.ok) {
     throw new Error(`Could not fetch WordPress menus: ${response.status} ${response.statusText}`);

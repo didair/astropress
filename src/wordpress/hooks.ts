@@ -120,14 +120,14 @@ async function callWordPressHook<T>(body: {
   value?: unknown;
   args: unknown[];
 }) {
-  const phpUrl = process.env.VITEWP_PHP_URL;
-  const secret = process.env.VITEWP_INTERNAL_SECRET;
+  const phpUrl = process.env.ASTROPRESS_PHP_URL;
+  const secret = process.env.ASTROPRESS_INTERNAL_SECRET;
 
   if (!phpUrl || !secret) {
-    throw new Error('WordPress hooks are only available during ViteWP SSR. Start the site with `vite-wp dev`.');
+    throw new Error('WordPress hooks are only available during AstroPress SSR. Start the site with `astropress dev`.');
   }
 
-  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?vitewp_internal_hook=1`, {
+  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?astropress_internal_hook=1`, {
     method: 'POST',
     headers: hookRequestHeaders(secret),
     body: JSON.stringify(body),
@@ -144,7 +144,7 @@ async function callWordPressHook<T>(body: {
 function hookRequestHeaders(secret: string) {
   const headers: Record<string, string> = {
     'content-type': 'application/json',
-    'x-vitewp-internal-secret': secret,
+    'x-astropress-internal-secret': secret,
   };
   const context = getOptionalRequestContext();
 
@@ -152,7 +152,7 @@ function hookRequestHeaders(secret: string) {
     headers.cookie = context.cookie;
   }
 
-  const publicUrl = process.env.VITEWP_PUBLIC_URL;
+  const publicUrl = process.env.ASTROPRESS_PUBLIC_URL;
 
   if (publicUrl) {
     const url = new URL(publicUrl);
@@ -216,11 +216,11 @@ function writeCache(key: string, value: HookRenderResult | HookFilterResult, opt
 }
 
 function shouldCache(options: HookOptions) {
-  if (options.cache === false || process.env.VITEWP_HOOKS_CACHE === '0') return false;
-  if (process.env.NODE_ENV === 'development' && process.env.VITEWP_HOOKS_CACHE !== '1') return false;
+  if (options.cache === false || process.env.ASTROPRESS_HOOKS_CACHE === '0') return false;
+  if (process.env.NODE_ENV === 'development' && process.env.ASTROPRESS_HOOKS_CACHE !== '1') return false;
   return true;
 }
 
 function ttl(options: HookOptions) {
-  return options.ttl ?? Number(process.env.VITEWP_HOOKS_CACHE_TTL ?? 300);
+  return options.ttl ?? Number(process.env.ASTROPRESS_HOOKS_CACHE_TTL ?? 300);
 }

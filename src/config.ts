@@ -8,7 +8,7 @@ type HookCacheConfig = boolean | {
   ttl?: number;
 };
 
-export interface ViteWpConfig {
+export interface AstroPressConfig {
   database?: {
     driver?: 'mysql' | 'mariadb';
     host?: string;
@@ -61,7 +61,7 @@ export interface ViteWpConfig {
   };
 }
 
-export interface LoadedViteWpConfig {
+export interface LoadedAstroPressConfig {
   root: string;
   configFile?: string;
   database: {
@@ -120,24 +120,24 @@ export interface LoadedViteWpConfig {
 }
 
 const configFiles = [
-  'vitewp.config.ts',
-  'vitewp.config.mts',
-  'vitewp.config.js',
-  'vitewp.config.mjs',
+  'astropress.config.ts',
+  'astropress.config.mts',
+  'astropress.config.js',
+  'astropress.config.mjs',
 ];
 
-export function defineConfig(config: ViteWpConfig): ViteWpConfig {
+export function defineConfig(config: AstroPressConfig): AstroPressConfig {
   return config;
 }
 
-export async function loadViteWpConfig(root = process.cwd()): Promise<LoadedViteWpConfig> {
+export async function loadAstroPressConfig(root = process.cwd()): Promise<LoadedAstroPressConfig> {
   loadDotEnv(root);
 
   const configFile = configFiles
     .map((file) => resolve(root, file))
     .find((file) => existsSync(file));
 
-  let userConfig: ViteWpConfig = {};
+  let userConfig: AstroPressConfig = {};
 
   if (configFile) {
     const loaded = await loadConfigFromFile(
@@ -148,7 +148,7 @@ export async function loadViteWpConfig(root = process.cwd()): Promise<LoadedVite
       undefined,
       'runner',
     );
-    userConfig = (loaded?.config ?? {}) as ViteWpConfig;
+    userConfig = (loaded?.config ?? {}) as AstroPressConfig;
   }
 
   return {
@@ -158,7 +158,7 @@ export async function loadViteWpConfig(root = process.cwd()): Promise<LoadedVite
       driver: userConfig.database?.driver ?? env('WP_DB_DRIVER', 'mysql') as 'mysql' | 'mariadb',
       host: userConfig.database?.host ?? env('WP_DB_HOST', '127.0.0.1'),
       port: userConfig.database?.port ?? Number(env('WP_DB_PORT', '3306')),
-      name: userConfig.database?.name ?? env('WP_DB_NAME', 'vitewp'),
+      name: userConfig.database?.name ?? env('WP_DB_NAME', 'astropress'),
       user: userConfig.database?.user ?? env('WP_DB_USER', 'root'),
       password: userConfig.database?.password ?? env('WP_DB_PASSWORD', ''),
       tablePrefix: userConfig.database?.tablePrefix ?? env('WP_DB_TABLE_PREFIX', 'wp_'),
@@ -187,19 +187,19 @@ export async function loadViteWpConfig(root = process.cwd()): Promise<LoadedVite
       directory: userConfig.templates?.directory ?? 'src/templates',
     },
     types: {
-      output: userConfig.types?.output ?? '.vitewp/types.d.ts',
+      output: userConfig.types?.output ?? '.astropress/types.d.ts',
     },
     dev: {
-      proxyHost: userConfig.dev?.proxyHost ?? env('VITEWP_PROXY_HOST', ''),
-      proxyPort: userConfig.dev?.proxyPort ?? envPort('VITEWP_PROXY_PORT'),
-      phpHost: userConfig.dev?.phpHost ?? env('VITEWP_PHP_HOST', '127.0.0.1'),
-      phpPort: userConfig.dev?.phpPort ?? envPort('VITEWP_PHP_PORT'),
-      astroHost: userConfig.dev?.astroHost ?? env('VITEWP_ASTRO_HOST', '127.0.0.1'),
-      astroPort: userConfig.dev?.astroPort ?? envPort('VITEWP_ASTRO_PORT'),
+      proxyHost: userConfig.dev?.proxyHost ?? env('ASTROPRESS_PROXY_HOST', ''),
+      proxyPort: userConfig.dev?.proxyPort ?? envPort('ASTROPRESS_PROXY_PORT'),
+      phpHost: userConfig.dev?.phpHost ?? env('ASTROPRESS_PHP_HOST', '127.0.0.1'),
+      phpPort: userConfig.dev?.phpPort ?? envPort('ASTROPRESS_PHP_PORT'),
+      astroHost: userConfig.dev?.astroHost ?? env('ASTROPRESS_ASTRO_HOST', '127.0.0.1'),
+      astroPort: userConfig.dev?.astroPort ?? envPort('ASTROPRESS_ASTRO_PORT'),
     },
     blocks: {
       entries: userConfig.blocks?.entries ?? ['src/blocks/**/block.json'],
-      outDir: userConfig.blocks?.outDir ?? 'wordpress/content/vitewp-assets',
+      outDir: userConfig.blocks?.outDir ?? 'wordpress/content/astropress-assets',
     },
     plugins: {
       entries: userConfig.plugins?.entries ?? [],

@@ -33,12 +33,12 @@ const attributes = {
   },
 };
 
-registerBlockType('vitewp/hero', {
+registerBlockType('astropress/hero', {
   apiVersion: 3,
-  title: 'ViteWP Hero',
+  title: 'AstroPress Hero',
   category: 'design',
   icon: 'format-image',
-  description: 'A simple ViteWP test block with a media-library image and headline.',
+  description: 'A simple AstroPress test block with a media-library image and headline.',
   supports: {
     html: false,
   },
@@ -46,7 +46,7 @@ registerBlockType('vitewp/hero', {
 
   edit({ attributes, setAttributes }) {
     const { headline = '', imageId, imageUrl = '', imageAlt = '' } = attributes;
-    const blockProps = useBlockProps({ className: 'vitewp-hero' });
+    const blockProps = useBlockProps({ className: 'astropress-hero' });
 
     const selectImage = (media) => setAttributes({
       imageId: media.id,
@@ -76,7 +76,7 @@ registerBlockType('vitewp/hero', {
         )
       ),
       imageUrl
-        ? h('figure', { className: 'vitewp-hero__media' },
+        ? h('figure', { className: 'astropress-hero__media' },
             h('img', { src: imageUrl, alt: imageAlt || '' })
           )
         : h(MediaPlaceholder, {
@@ -92,7 +92,7 @@ registerBlockType('vitewp/hero', {
           }),
       h(RichText, {
         tagName: 'h1',
-        className: 'vitewp-hero__headline',
+        className: 'astropress-hero__headline',
         value: headline,
         placeholder: 'Write a hero headline…',
         allowedFormats: [],
@@ -103,15 +103,15 @@ registerBlockType('vitewp/hero', {
 
   save({ attributes }) {
     const { headline = '', imageUrl = '', imageAlt = '' } = attributes;
-    const blockProps = wp.blockEditor.useBlockProps.save({ className: 'vitewp-hero' });
+    const blockProps = wp.blockEditor.useBlockProps.save({ className: 'astropress-hero' });
 
     return h('section', blockProps,
-      imageUrl && h('figure', { className: 'vitewp-hero__media' },
+      imageUrl && h('figure', { className: 'astropress-hero__media' },
         h('img', { src: imageUrl, alt: imageAlt || '' })
       ),
       h(RichText.Content, {
         tagName: 'h1',
-        className: 'vitewp-hero__headline',
+        className: 'astropress-hero__headline',
         value: headline,
       })
     );

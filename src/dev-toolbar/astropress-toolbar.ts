@@ -1,6 +1,6 @@
 import { defineToolbarApp } from 'astro/toolbar';
 
-interface ViteWpRouteInfo {
+interface AstroPressRouteInfo {
   candidateTemplates: string[];
   kind: string;
   liveCollection: {
@@ -14,13 +14,13 @@ interface ViteWpRouteInfo {
   postType: string | null;
   slug: string | null;
   template: string | null;
-  templateSource: 'project' | 'vite-wp' | null;
+  templateSource: 'project' | 'astropress' | null;
   totalPages: number | null;
 }
 
 declare global {
   interface Window {
-    __VITEWP_ROUTE_INFO__?: ViteWpRouteInfo;
+    __ASTROPRESS_ROUTE_INFO__?: AstroPressRouteInfo;
   }
 }
 
@@ -28,13 +28,13 @@ export default defineToolbarApp({
   init(canvas) {
     render(canvas);
 
-    window.addEventListener('vitewp:route-info', () => render(canvas));
+    window.addEventListener('astropress:route-info', () => render(canvas));
     document.addEventListener('astro:after-swap', () => render(canvas));
   },
 });
 
 function render(canvas: ShadowRoot) {
-  const info = window.__VITEWP_ROUTE_INFO__;
+  const info = window.__ASTROPRESS_ROUTE_INFO__;
 
   canvas.innerHTML = '';
 
@@ -120,10 +120,10 @@ function render(canvas: ShadowRoot) {
   canvas.append(panel);
 }
 
-function renderInfo(info: ViteWpRouteInfo) {
+function renderInfo(info: AstroPressRouteInfo) {
   return `
     <header>
-      <h1>ViteWP route</h1>
+      <h1>AstroPress route</h1>
       <span class="badge">${escapeHtml(info.matched ? info.kind : '404')}</span>
     </header>
     <section class="grid">
@@ -147,7 +147,7 @@ function renderInfo(info: ViteWpRouteInfo) {
 function renderEmptyState() {
   return `
     <header>
-      <h1>ViteWP route</h1>
+      <h1>AstroPress route</h1>
       <span class="badge">No route data</span>
     </header>
     <p>Open an Astro-rendered WordPress frontend route to see template hierarchy information here.</p>
@@ -163,7 +163,7 @@ function row(label: string, value: string) {
   `;
 }
 
-function paginationLabel(info: ViteWpRouteInfo) {
+function paginationLabel(info: AstroPressRouteInfo) {
   if (!info.page && !info.totalPages) {
     return '—';
   }

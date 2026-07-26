@@ -3,7 +3,7 @@ import http, { type IncomingMessage, type ServerResponse } from 'node:http';
 import { extname, normalize, resolve, sep } from 'node:path';
 import type { Duplex } from 'node:stream';
 import { URL } from 'node:url';
-import type { LoadedViteWpConfig } from '../config.js';
+import type { LoadedAstroPressConfig } from '../config.js';
 
 export interface ProxyServer {
   url: string;
@@ -27,9 +27,9 @@ const wordpressFiles = [
   '/favicon.ico',
 ];
 
-const wooCartTokenCookie = 'vitewp_woocommerce_cart_token';
+const wooCartTokenCookie = 'astropress_woocommerce_cart_token';
 
-export async function startUnifiedProxy(config: LoadedViteWpConfig): Promise<ProxyServer> {
+export async function startUnifiedProxy(config: LoadedAstroPressConfig): Promise<ProxyServer> {
   const publicUrl = new URL(config.wordpress.url);
   const listenHost = config.dev.proxyHost || publicUrl.hostname;
   const listenPort = config.dev.proxyPort || Number(publicUrl.port || 3000);
@@ -66,12 +66,12 @@ export async function startUnifiedProxy(config: LoadedViteWpConfig): Promise<Pro
   };
 }
 
-function selectTarget(path: string, phpUrl: URL, astroUrl: URL, config: LoadedViteWpConfig) {
+function selectTarget(path: string, phpUrl: URL, astroUrl: URL, config: LoadedAstroPressConfig) {
   return isWordPressRequest(path, config) ? phpUrl : astroUrl;
 }
 
-function isWordPressRequest(path: string, config: LoadedViteWpConfig) {
-  const url = new URL(path, 'http://vitewp.local');
+function isWordPressRequest(path: string, config: LoadedAstroPressConfig) {
+  const url = new URL(path, 'http://astropress.local');
   const pathname = url.pathname;
   return wordpressPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
     || wordpressFiles.includes(pathname)
@@ -85,7 +85,7 @@ function hasPhpPathSegment(pathname: string) {
 }
 
 function serveWpContentAsset(request: IncomingMessage, response: ServerResponse, contentDir: string) {
-  const pathname = new URL(request.url ?? '/', 'http://vitewp.local').pathname;
+  const pathname = new URL(request.url ?? '/', 'http://astropress.local').pathname;
 
   if (!pathname.startsWith('/wp-content/')) {
     return false;
@@ -167,7 +167,7 @@ function proxyHttpRequest(request: IncomingMessage, response: ServerResponse, ta
 
   targetRequest.on('error', (error) => {
     response.writeHead(502, { 'content-type': 'text/plain; charset=utf-8' });
-    response.end(`ViteWP proxy could not reach ${target.origin}: ${error.message}\n`);
+    response.end(`AstroPress proxy could not reach ${target.origin}: ${error.message}\n`);
   });
 
   request.pipe(targetRequest);

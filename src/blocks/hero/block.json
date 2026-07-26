@@ -1,10 +1,10 @@
 {
   "apiVersion": 3,
-  "name": "vitewp/hero",
-  "title": "ViteWP Hero",
+  "name": "astropress/hero",
+  "title": "AstroPress Hero",
   "category": "design",
   "icon": "format-image",
-  "description": "A simple ViteWP test block with a media-library image and headline.",
+  "description": "A simple AstroPress test block with a media-library image and headline.",
   "supports": {
     "html": false
   },

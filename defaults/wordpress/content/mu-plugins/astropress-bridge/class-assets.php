@@ -1,18 +1,18 @@
 <?php
 
-final class ViteWP_Bridge_Assets
+final class AstroPress_Bridge_Assets
 {
     public static function registerBundledBlocks(): void
     {
 
-        $manifest = ViteWP_Bridge_Assets::assetsManifest();
+        $manifest = AstroPress_Bridge_Assets::assetsManifest();
 
         foreach (($manifest['blocks'] ?? []) as $block) {
             foreach (($block['entries'] ?? []) as $entry) {
-                ViteWP_Bridge_Assets::registerAssetEntry($entry);
+                AstroPress_Bridge_Assets::registerAssetEntry($entry);
             }
 
-            $directory = ViteWP_Bridge_Assets::projectPath((string) ($block['directory'] ?? ''));
+            $directory = AstroPress_Bridge_Assets::projectPath((string) ($block['directory'] ?? ''));
 
             if ($directory && file_exists($directory . '/block.json')) {
                 register_block_type($directory);
@@ -23,8 +23,8 @@ final class ViteWP_Bridge_Assets
     public static function blocks(): array
     {
 
-        $manifest_file = defined('VITEWP_ASSETS_MANIFEST') ? (string) VITEWP_ASSETS_MANIFEST : '';
-        $manifest = ViteWP_Bridge_Assets::assetsManifest();
+        $manifest_file = defined('ASTROPRESS_ASSETS_MANIFEST') ? (string) ASTROPRESS_ASSETS_MANIFEST : '';
+        $manifest = AstroPress_Bridge_Assets::assetsManifest();
         $registry = WP_Block_Type_Registry::get_instance();
 
         return [
@@ -34,7 +34,7 @@ final class ViteWP_Bridge_Assets
             ],
             'blocks' => array_map(function (array $block) use ($registry) {
                 $name = (string) ($block['name'] ?? '');
-                $directory = ViteWP_Bridge_Assets::projectPath((string) ($block['directory'] ?? ''));
+                $directory = AstroPress_Bridge_Assets::projectPath((string) ($block['directory'] ?? ''));
                 $block_type = $name !== '' && $registry->is_registered($name) ? $registry->get_registered($name) : null;
 
                 return [
@@ -43,10 +43,10 @@ final class ViteWP_Bridge_Assets
                     'blockJson' => $directory ? $directory . '/block.json' : null,
                     'blockJsonExists' => $directory ? file_exists($directory . '/block.json') : false,
                     'registered' => $name !== '' && $registry->is_registered($name),
-                    'editorScriptHandles' => ViteWP_Bridge_Assets::blockTypeProperty($block_type, 'editor_script_handles'),
-                    'scriptHandles' => ViteWP_Bridge_Assets::blockTypeProperty($block_type, 'script_handles'),
-                    'styleHandles' => ViteWP_Bridge_Assets::blockTypeProperty($block_type, 'style_handles'),
-                    'registeredAssets' => array_map('ViteWP_Bridge_Assets::assetStatus', is_array($block['entries'] ?? null) ? $block['entries'] : []),
+                    'editorScriptHandles' => AstroPress_Bridge_Assets::blockTypeProperty($block_type, 'editor_script_handles'),
+                    'scriptHandles' => AstroPress_Bridge_Assets::blockTypeProperty($block_type, 'script_handles'),
+                    'styleHandles' => AstroPress_Bridge_Assets::blockTypeProperty($block_type, 'style_handles'),
+                    'registeredAssets' => array_map('AstroPress_Bridge_Assets::assetStatus', is_array($block['entries'] ?? null) ? $block['entries'] : []),
                     'entries' => $block['entries'] ?? [],
                 ];
             }, is_array($manifest['blocks'] ?? null) ? $manifest['blocks'] : []),
@@ -80,21 +80,21 @@ final class ViteWP_Bridge_Assets
     public static function enqueuePluginAssets(): void
     {
 
-        $manifest = ViteWP_Bridge_Assets::assetsManifest();
+        $manifest = AstroPress_Bridge_Assets::assetsManifest();
 
         foreach (($manifest['plugins'] ?? []) as $entry) {
-            ViteWP_Bridge_Assets::enqueueAssetEntry($entry);
+            AstroPress_Bridge_Assets::enqueueAssetEntry($entry);
         }
     }
 
     public static function enqueueBlockAssets(): void
     {
 
-        $manifest = ViteWP_Bridge_Assets::assetsManifest();
+        $manifest = AstroPress_Bridge_Assets::assetsManifest();
 
         foreach (($manifest['blocks'] ?? []) as $block) {
             foreach (($block['entries'] ?? []) as $entry) {
-                ViteWP_Bridge_Assets::enqueueAssetEntry($entry);
+                AstroPress_Bridge_Assets::enqueueAssetEntry($entry);
             }
         }
     }
@@ -108,7 +108,7 @@ final class ViteWP_Bridge_Assets
             return $manifest;
         }
 
-        $file = defined('VITEWP_ASSETS_MANIFEST') ? (string) VITEWP_ASSETS_MANIFEST : '';
+        $file = defined('ASTROPRESS_ASSETS_MANIFEST') ? (string) ASTROPRESS_ASSETS_MANIFEST : '';
 
         if ($file === '' || ! file_exists($file)) {
             $manifest = [];
@@ -131,7 +131,7 @@ final class ViteWP_Bridge_Assets
         }
 
         $dependencies = is_array($entry['dependencies'] ?? null) ? array_values($entry['dependencies']) : [];
-        $url = ViteWP_Bridge_Assets::assetUrl($file);
+        $url = AstroPress_Bridge_Assets::assetUrl($file);
 
         if (($entry['kind'] ?? '') === 'style') {
             wp_enqueue_style($handle, $url, $dependencies, null);
@@ -141,7 +141,7 @@ final class ViteWP_Bridge_Assets
         wp_enqueue_script($handle, $url, $dependencies, null, true);
 
         foreach (($entry['css'] ?? []) as $index => $css) {
-            wp_enqueue_style($handle . '-css-' . $index, ViteWP_Bridge_Assets::assetUrl((string) $css), [], null);
+            wp_enqueue_style($handle . '-css-' . $index, AstroPress_Bridge_Assets::assetUrl((string) $css), [], null);
         }
     }
 
@@ -156,7 +156,7 @@ final class ViteWP_Bridge_Assets
         }
 
         $dependencies = is_array($entry['dependencies'] ?? null) ? array_values($entry['dependencies']) : [];
-        $url = ViteWP_Bridge_Assets::assetUrl($file);
+        $url = AstroPress_Bridge_Assets::assetUrl($file);
 
         if (($entry['kind'] ?? '') === 'style') {
             if (! wp_style_is($handle, 'registered')) {
@@ -172,7 +172,7 @@ final class ViteWP_Bridge_Assets
         foreach (($entry['css'] ?? []) as $index => $css) {
             $style_handle = $handle . '-css-' . $index;
             if (! wp_style_is($style_handle, 'registered')) {
-                wp_register_style($style_handle, ViteWP_Bridge_Assets::assetUrl((string) $css), [], null);
+                wp_register_style($style_handle, AstroPress_Bridge_Assets::assetUrl((string) $css), [], null);
             }
         }
     }
@@ -180,17 +180,17 @@ final class ViteWP_Bridge_Assets
     public static function assetUrl(string $file): string
     {
 
-        return content_url('/vitewp-assets/' . ltrim($file, '/'));
+        return content_url('/astropress-assets/' . ltrim($file, '/'));
     }
 
     public static function projectPath(string $relative_path): ?string
     {
 
-        if ($relative_path === '' || ! defined('VITEWP_ROOT')) {
+        if ($relative_path === '' || ! defined('ASTROPRESS_ROOT')) {
             return null;
         }
 
-        return rtrim((string) VITEWP_ROOT, '/\\') . DIRECTORY_SEPARATOR . ltrim($relative_path, '/\\');
+        return rtrim((string) ASTROPRESS_ROOT, '/\\') . DIRECTORY_SEPARATOR . ltrim($relative_path, '/\\');
     }
 
 }

@@ -1,8 +1,8 @@
 ---
 import type { LayoutTemplateProps as Props } from 'wp-types';
 
-const { title = 'ViteWP', toolbarRouteInfo = null } = Astro.props;
-const pageTitle = title ? `${String(title).replace(/<[^>]+>/g, '')} · ViteWP` : 'ViteWP';
+const { title = 'AstroPress', toolbarRouteInfo = null } = Astro.props;
+const pageTitle = title ? `${String(title).replace(/<[^>]+>/g, '')} · AstroPress` : 'AstroPress';
 const toolbarRouteInfoJson = import.meta.env.DEV && toolbarRouteInfo
   ? JSON.stringify(toolbarRouteInfo).replaceAll('<', '\\u003c')
   : '';
@@ -13,7 +13,7 @@ const toolbarRouteInfoJson = import.meta.env.DEV && toolbarRouteInfo
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     {toolbarRouteInfoJson && (
-      <script is:inline set:html={`window.__VITEWP_ROUTE_INFO__ = ${toolbarRouteInfoJson}; window.dispatchEvent(new CustomEvent('vitewp:route-info', { detail: window.__VITEWP_ROUTE_INFO__ }));`} />
+      <script is:inline set:html={`window.__ASTROPRESS_ROUTE_INFO__ = ${toolbarRouteInfoJson}; window.dispatchEvent(new CustomEvent('astropress:route-info', { detail: window.__ASTROPRESS_ROUTE_INFO__ }));`} />
     )}
   </head>
   <body>

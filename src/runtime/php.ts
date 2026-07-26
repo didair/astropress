@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
-import type { LoadedViteWpConfig } from '../config.js';
+import type { LoadedAstroPressConfig } from '../config.js';
 import { spawnManaged, type ManagedProcess } from './process.js';
 
-export function startPhpServer(config: LoadedViteWpConfig): ManagedProcess {
+export function startPhpServer(config: LoadedAstroPressConfig): ManagedProcess {
   const docroot = resolve(config.root, config.wordpress.docroot);
   const contentDir = resolve(config.root, config.wordpress.contentDir);
   const router = writePhpRouter(config, docroot, contentDir);
@@ -20,7 +20,7 @@ export function startPhpServer(config: LoadedViteWpConfig): ManagedProcess {
 }
 
 function isVerbose() {
-  return process.env.VITEWP_VERBOSE === '1';
+  return process.env.ASTROPRESS_VERBOSE === '1';
 }
 
 function shouldLogPhpLine(line: string) {
@@ -34,8 +34,8 @@ function shouldLogPhpLine(line: string) {
   return true;
 }
 
-function writePhpRouter(config: LoadedViteWpConfig, docroot: string, contentDir: string) {
-  const runtimeDir = resolve(config.root, '.vitewp');
+function writePhpRouter(config: LoadedAstroPressConfig, docroot: string, contentDir: string) {
+  const runtimeDir = resolve(config.root, '.astropress');
   const routerPath = join(runtimeDir, 'php-router.php');
 
   mkdirSync(runtimeDir, { recursive: true });
@@ -54,7 +54,7 @@ if (str_starts_with($path, '/wp-content/')) {
     $content_file = $content_dir . substr($path, strlen('/wp-content'));
 
     if (is_file($content_file)) {
-        $type = vitewp_content_type($content_file);
+        $type = astropress_content_type($content_file);
 
         if ($type) {
             header('Content-Type: ' . $type);
@@ -76,7 +76,7 @@ if ($path !== '/' && is_dir($file) && is_file(rtrim($file, '/') . '/index.php'))
     return true;
 }
 
-function vitewp_content_type(string $file): string
+function astropress_content_type(string $file): string
 {
     return match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
         'css' => 'text/css; charset=UTF-8',

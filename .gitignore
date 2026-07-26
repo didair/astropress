@@ -30,13 +30,19 @@ docs/
 *.sln
 *.sw?
 
-# ViteWP generated/runtime files
-.vitewp/
+# AstroPress generated/runtime files
+.astropress/
 wordpress/public/
+wordpress/content/mu-plugins/astropress-bridge.php
+wordpress/content/mu-plugins/astropress-bridge/
+wordpress/content/themes/astropress/
+wordpress/content/astropress-assets/
+wordpress/content/uploads/
+wordpress/content/debug.log
+.astro/
+# Legacy ViteWP generated/runtime files
+.vitewp/
 wordpress/content/mu-plugins/vitewp-bridge.php
 wordpress/content/mu-plugins/vitewp-bridge/
 wordpress/content/themes/vitewp/
 wordpress/content/vitewp-assets/
-wordpress/content/uploads/
-wordpress/content/debug.log
-.astro/

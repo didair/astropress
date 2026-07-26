@@ -269,11 +269,11 @@ export function getWordPressApiBase() {
 }
 
 export function getWordPressBaseUrl() {
-  return (process.env.VITEWP_PUBLIC_URL ?? process.env.WP_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+  return (process.env.ASTROPRESS_PUBLIC_URL ?? process.env.WP_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 }
 
 async function resolveViaWordPress(pathname: string) {
-  const url = new URL(`${getWordPressBaseUrl()}/wp-json/vitewp/v1/resolve`);
+  const url = new URL(`${getWordPressBaseUrl()}/wp-json/astropress/v1/resolve`);
   url.searchParams.set('path', pathname || '/');
 
   const response = await fetch(url);
@@ -283,14 +283,14 @@ async function resolveViaWordPress(pathname: string) {
   }
 
   if (!response.ok) {
-    throw new Error(`ViteWP route resolution failed: ${response.status} ${response.statusText}`);
+    throw new Error(`AstroPress route resolution failed: ${response.status} ${response.statusText}`);
   }
 
   return response.json() as Promise<WpBridgeResolution>;
 }
 
 async function getById<PostType extends string = string>(restBase: string, id: number) {
-  const url = new URL(`${getWordPressBaseUrl()}/wp-json/vitewp/v1/post`);
+  const url = new URL(`${getWordPressBaseUrl()}/wp-json/astropress/v1/post`);
   url.searchParams.set('id', String(id));
   url.searchParams.set('restBase', restBase);
 
@@ -298,7 +298,7 @@ async function getById<PostType extends string = string>(restBase: string, id: n
 }
 
 async function getArchive(params: Record<string, string | number | undefined>) {
-  const url = new URL(`${getWordPressBaseUrl()}/wp-json/vitewp/v1/archive`);
+  const url = new URL(`${getWordPressBaseUrl()}/wp-json/astropress/v1/archive`);
 
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined) {

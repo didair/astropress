@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, watch, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
 import { build, type InlineConfig } from 'vite';
-import type { LoadedViteWpConfig } from '../config.js';
+import type { LoadedAstroPressConfig } from '../config.js';
 
 export interface WordPressAssetWatcher {
   stop: () => Promise<void>;
@@ -53,7 +53,7 @@ const blockAssetFields = [
 ] as const;
 
 export async function buildWordPressAssets(
-  config: LoadedViteWpConfig,
+  config: LoadedAstroPressConfig,
   options: { mode?: 'development' | 'production' } = {},
 ) {
   const discovered = discoverAssets(config);
@@ -69,7 +69,7 @@ export async function buildWordPressAssets(
   return manifest;
 }
 
-export async function startWordPressAssetWatcher(config: LoadedViteWpConfig): Promise<WordPressAssetWatcher | null> {
+export async function startWordPressAssetWatcher(config: LoadedAstroPressConfig): Promise<WordPressAssetWatcher | null> {
   const discovered = discoverAssets(config);
 
   if (discovered.entries.length === 0) {
@@ -108,7 +108,7 @@ export async function startWordPressAssetWatcher(config: LoadedViteWpConfig): Pr
 }
 
 let rebuildTimer: NodeJS.Timeout | undefined;
-function scheduleAssetRebuild(config: LoadedViteWpConfig, outDir: string) {
+function scheduleAssetRebuild(config: LoadedAstroPressConfig, outDir: string) {
   clearTimeout(rebuildTimer);
   rebuildTimer = setTimeout(async () => {
     try {
@@ -143,7 +143,7 @@ function unique(values: string[]) {
   return [...new Set(values)];
 }
 
-function discoverAssets(config: LoadedViteWpConfig): DiscoveredAssets {
+function discoverAssets(config: LoadedAstroPressConfig): DiscoveredAssets {
   const blocks = discoverBlocks(config);
   const pluginEntries = discoverPluginEntries(config);
   return {
@@ -154,7 +154,7 @@ function discoverAssets(config: LoadedViteWpConfig): DiscoveredAssets {
 }
 
 async function buildAssetEntries(
-  config: LoadedViteWpConfig,
+  config: LoadedAstroPressConfig,
   outDir: string,
   entries: AssetEntry[],
   mode: 'development' | 'production',
@@ -180,7 +180,7 @@ async function buildAssetEntries(
 }
 
 function writeAssetsManifest(
-  config: LoadedViteWpConfig,
+  config: LoadedAstroPressConfig,
   outDir: string,
   discovered: DiscoveredAssets,
   builtEntries: Map<string, AssetEntry>,
@@ -200,7 +200,7 @@ function writeAssetsManifest(
     plugins: discovered.pluginEntries.map((entry) => builtEntries.get(entry.id) ?? entry).map(relativeEntry(config.root)),
   };
 
-  writeFileSync(join(outDir, 'vitewp-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  writeFileSync(join(outDir, 'astropress-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   return manifest;
 }
 
@@ -261,7 +261,7 @@ function generatedBlockMetadataFile(outDir: string, block: DiscoveredBlock) {
   return join(generatedBlockDirectory(outDir, block), 'block.json');
 }
 
-function discoverBlocks(config: LoadedViteWpConfig): DiscoveredBlock[] {
+function discoverBlocks(config: LoadedAstroPressConfig): DiscoveredBlock[] {
   const files = config.blocks.entries.flatMap((pattern) => findFiles(config.root, pattern));
 
   return files.map((metadataFile) => {
@@ -287,7 +287,7 @@ function discoverBlocks(config: LoadedViteWpConfig): DiscoveredBlock[] {
   });
 }
 
-function discoverPluginEntries(config: LoadedViteWpConfig): AssetEntry[] {
+function discoverPluginEntries(config: LoadedAstroPressConfig): AssetEntry[] {
   return config.plugins.entries
     .flatMap((pattern) => findFiles(config.root, pattern))
     .filter((source) => /\.(m?[jt]sx?|css)$/.test(source))
@@ -295,13 +295,13 @@ function discoverPluginEntries(config: LoadedViteWpConfig): AssetEntry[] {
       id: safeId(`plugin-${relative(config.root, source)}`),
       source,
       kind: source.endsWith('.css') ? 'style' : 'script',
-      handle: safeId(`vitewp-plugin-${basename(source, extname(source))}`),
+      handle: safeId(`astropress-plugin-${basename(source, extname(source))}`),
       dependencies: dependenciesForSource(source),
     }));
 }
 
 function viteAssetConfig(
-  config: LoadedViteWpConfig,
+  config: LoadedAstroPressConfig,
   outDir: string,
   entry: AssetEntry,
   mode: 'development' | 'production',

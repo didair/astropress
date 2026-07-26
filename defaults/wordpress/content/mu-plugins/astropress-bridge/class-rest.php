@@ -1,10 +1,10 @@
 <?php
 
-final class ViteWP_Bridge_Rest
+final class AstroPress_Bridge_Rest
 {
     public static function registerRoutes(): void
     {
-        register_rest_route('vitewp/v1', '/routing', [
+        register_rest_route('astropress/v1', '/routing', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
             'callback' => function () {
@@ -15,13 +15,13 @@ final class ViteWP_Bridge_Rest
                     'show_on_front' => get_option('show_on_front'),
                     'page_on_front' => $page_on_front,
                     'page_for_posts' => $page_for_posts,
-                    'front_page' => ViteWP_Bridge_Content::pageSummary($page_on_front),
-                    'posts_page' => ViteWP_Bridge_Content::pageSummary($page_for_posts),
+                    'front_page' => AstroPress_Bridge_Content::pageSummary($page_on_front),
+                    'posts_page' => AstroPress_Bridge_Content::pageSummary($page_for_posts),
                 ];
             },
         ]);
 
-        register_rest_route('vitewp/v1', '/health', [
+        register_rest_route('astropress/v1', '/health', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
             'callback' => function () {
@@ -39,30 +39,30 @@ final class ViteWP_Bridge_Rest
             },
         ]);
 
-        register_rest_route('vitewp/v1', '/types', [
+        register_rest_route('astropress/v1', '/types', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
             'callback' => function () {
                 return [
-                    'postTypes' => ViteWP_Bridge_Content::postTypes(),
-                    'taxonomies' => ViteWP_Bridge_Content::taxonomies(),
+                    'postTypes' => AstroPress_Bridge_Content::postTypes(),
+                    'taxonomies' => AstroPress_Bridge_Content::taxonomies(),
                 ];
             },
         ]);
 
-        register_rest_route('vitewp/v1', '/blocks', [
+        register_rest_route('astropress/v1', '/blocks', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
-            'callback' => [ViteWP_Bridge_Assets::class, 'blocks'],
+            'callback' => [AstroPress_Bridge_Assets::class, 'blocks'],
         ]);
 
-        register_rest_route('vitewp/v1', '/menus', [
+        register_rest_route('astropress/v1', '/menus', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
-            'callback' => [ViteWP_Bridge_Content::class, 'menus'],
+            'callback' => [AstroPress_Bridge_Content::class, 'menus'],
         ]);
 
-        register_rest_route('vitewp/v1', '/post', [
+        register_rest_route('astropress/v1', '/post', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
             'args' => [
@@ -78,11 +78,11 @@ final class ViteWP_Bridge_Rest
                     return new WP_REST_Response(['message' => 'Post not found'], 404);
                 }
 
-                return ViteWP_Bridge_Content::postItem($post);
+                return AstroPress_Bridge_Content::postItem($post);
             },
         ]);
 
-        register_rest_route('vitewp/v1', '/resolve', [
+        register_rest_route('astropress/v1', '/resolve', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
             'args' => [
@@ -91,13 +91,13 @@ final class ViteWP_Bridge_Rest
                     'required' => true,
                 ],
             ],
-            'callback' => fn (WP_REST_Request $request) => ViteWP_Bridge_Content::resolvePath((string) $request->get_param('path')),
+            'callback' => fn (WP_REST_Request $request) => AstroPress_Bridge_Content::resolvePath((string) $request->get_param('path')),
         ]);
 
-        register_rest_route('vitewp/v1', '/archive', [
+        register_rest_route('astropress/v1', '/archive', [
             'methods' => WP_REST_Server::READABLE,
             'permission_callback' => '__return_true',
-            'callback' => fn (WP_REST_Request $request) => ViteWP_Bridge_Content::archive($request),
+            'callback' => fn (WP_REST_Request $request) => AstroPress_Bridge_Content::archive($request),
         ]);
     }
 }

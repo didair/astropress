@@ -1,23 +1,23 @@
 <?php
 
-final class ViteWP_Bridge_Internal
+final class AstroPress_Bridge_Internal
 {
     public static function handleInternalRequests(): void
     {
-        if (isset($_GET['vitewp_internal_auth_action'])) {
+        if (isset($_GET['astropress_internal_auth_action'])) {
             self::handleInternalAuthAction();
         }
 
-        if (isset($_GET['vitewp_internal_woocommerce'])) {
+        if (isset($_GET['astropress_internal_woocommerce'])) {
             add_action('wp_loaded', [self::class, 'handleInternalWooCommerce'], 0);
             return;
         }
 
-        if (isset($_GET['vitewp_internal_auth'])) {
+        if (isset($_GET['astropress_internal_auth'])) {
             self::handleInternalAuth();
         }
 
-        if (! isset($_GET['vitewp_internal_hook'])) {
+        if (! isset($_GET['astropress_internal_hook'])) {
             return;
         }
 
@@ -27,7 +27,7 @@ final class ViteWP_Bridge_Internal
     public static function handleInternalHook(): void
     {
 
-        ViteWP_Bridge_Internal::requireInternalRequest();
+        AstroPress_Bridge_Internal::requireInternalRequest();
 
         $payload = json_decode((string) file_get_contents('php://input'), true);
 
@@ -42,7 +42,7 @@ final class ViteWP_Bridge_Internal
         $hook = (string) ($payload['hook'] ?? '');
         $args = is_array($payload['args'] ?? null) ? array_values($payload['args']) : [];
         $context = is_array($payload['context'] ?? null) ? $payload['context'] : [];
-        $omit_default_assets = ViteWP_Bridge_Internal::shouldOmitDefaultAssets();
+        $omit_default_assets = AstroPress_Bridge_Internal::shouldOmitDefaultAssets();
 
         if ($hook === '' || ! in_array($type, ['action', 'filter'], true)) {
             status_header(400);
@@ -51,10 +51,10 @@ final class ViteWP_Bridge_Internal
             exit;
         }
 
-        ViteWP_Bridge_Internal::setupHookContext($context);
+        AstroPress_Bridge_Internal::setupHookContext($context);
 
         if ($omit_default_assets) {
-            ViteWP_Bridge_Internal::omitDefaultHookAssets($hook);
+            AstroPress_Bridge_Internal::omitDefaultHookAssets($hook);
         }
 
         if ($type === 'action') {
@@ -62,7 +62,7 @@ final class ViteWP_Bridge_Internal
             do_action_ref_array($hook, $args);
             $rendered = (string) ob_get_clean();
 
-            ViteWP_Bridge_Internal::json([
+            AstroPress_Bridge_Internal::json([
                 'type' => 'action',
                 'hook' => $hook,
                 'rendered' => $rendered,
@@ -73,7 +73,7 @@ final class ViteWP_Bridge_Internal
         $filter_args = array_merge([$value], $args);
         $filtered = apply_filters_ref_array($hook, $filter_args);
 
-        ViteWP_Bridge_Internal::json([
+        AstroPress_Bridge_Internal::json([
             'type' => 'filter',
             'hook' => $hook,
             'value' => $filtered,
@@ -84,104 +84,104 @@ final class ViteWP_Bridge_Internal
     public static function handleInternalWooCommerce(): void
     {
 
-        ViteWP_Bridge_Internal::requireInternalRequest();
+        AstroPress_Bridge_Internal::requireInternalRequest();
 
         if (! class_exists('WooCommerce')) {
-            ViteWP_Bridge_Internal::jsonError(404, 'woocommerce_inactive', 'WooCommerce is not active.');
+            AstroPress_Bridge_Internal::jsonError(404, 'woocommerce_inactive', 'WooCommerce is not active.');
         }
 
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-            ViteWP_Bridge_Internal::jsonError(405, 'method_not_allowed', 'WooCommerce account actions must use POST.');
+            AstroPress_Bridge_Internal::jsonError(405, 'method_not_allowed', 'WooCommerce account actions must use POST.');
         }
 
         $payload = json_decode((string) file_get_contents('php://input'), true);
 
         if (! is_array($payload)) {
-            ViteWP_Bridge_Internal::jsonError(400, 'invalid_json', 'Invalid JSON payload.');
+            AstroPress_Bridge_Internal::jsonError(400, 'invalid_json', 'Invalid JSON payload.');
         }
 
         $action = sanitize_key((string) ($payload['action'] ?? ''));
 
         if ($action === 'customer') {
-            ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::woocommerceCustomer());
+            AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::woocommerceCustomer());
         }
 
         $user_id = get_current_user_id();
 
         if ($user_id <= 0) {
-            ViteWP_Bridge_Internal::jsonError(401, 'auth_required', 'Authentication is required.');
+            AstroPress_Bridge_Internal::jsonError(401, 'auth_required', 'Authentication is required.');
         }
 
         if ($action === 'update_customer') {
-            ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::updateWooCommerceCustomer($payload, $user_id));
+            AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::updateWooCommerceCustomer($payload, $user_id));
         }
 
         if ($action === 'orders') {
-            ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::woocommerceOrders($payload, $user_id));
+            AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::woocommerceOrders($payload, $user_id));
         }
 
         if ($action === 'reviews') {
-            ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::woocommerceReviews($payload, $user_id));
+            AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::woocommerceReviews($payload, $user_id));
         }
 
         if ($action === 'upsert_review') {
-            ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::upsertWooCommerceReview($payload, $user_id));
+            AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::upsertWooCommerceReview($payload, $user_id));
         }
 
-        ViteWP_Bridge_Internal::jsonError(400, 'invalid_action', 'Unknown WooCommerce account action.');
+        AstroPress_Bridge_Internal::jsonError(400, 'invalid_action', 'Unknown WooCommerce account action.');
     }
 
     public static function handleInternalAuth(): void
     {
 
-        ViteWP_Bridge_Internal::requireInternalRequest();
+        AstroPress_Bridge_Internal::requireInternalRequest();
 
         $action = sanitize_text_field((string) ($_GET['action'] ?? 'wp_rest'));
         $redirect_to = esc_url_raw((string) ($_GET['redirect_to'] ?? home_url('/')));
 
-        ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::authContext($action, $redirect_to));
+        AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::authContext($action, $redirect_to));
     }
 
     public static function handleInternalAuthAction(): void
     {
 
-        ViteWP_Bridge_Internal::requireInternalRequest();
+        AstroPress_Bridge_Internal::requireInternalRequest();
 
         if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-            ViteWP_Bridge_Internal::jsonError(405, 'method_not_allowed', 'Auth actions must use POST.');
+            AstroPress_Bridge_Internal::jsonError(405, 'method_not_allowed', 'Auth actions must use POST.');
         }
 
         $payload = json_decode((string) file_get_contents('php://input'), true);
 
         if (! is_array($payload)) {
-            ViteWP_Bridge_Internal::jsonError(400, 'invalid_json', 'Invalid JSON payload.');
+            AstroPress_Bridge_Internal::jsonError(400, 'invalid_json', 'Invalid JSON payload.');
         }
 
         $action = sanitize_key((string) ($payload['action'] ?? ''));
         $redirect_to = esc_url_raw((string) ($payload['redirectTo'] ?? home_url('/')));
 
         if ($action === 'login') {
-            ViteWP_Bridge_Internal::handlePasswordLogin($payload, $redirect_to);
+            AstroPress_Bridge_Internal::handlePasswordLogin($payload, $redirect_to);
         }
 
         if ($action === 'logout') {
             wp_logout();
-            ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::authContext('wp_rest', $redirect_to));
+            AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::authContext('wp_rest', $redirect_to));
         }
 
         if ($action === 'register') {
-            ViteWP_Bridge_Internal::handleUserRegistration($payload, $redirect_to);
+            AstroPress_Bridge_Internal::handleUserRegistration($payload, $redirect_to);
         }
 
         if ($action === 'request_password_reset') {
-            ViteWP_Bridge_Internal::handlePasswordResetRequest($payload);
+            AstroPress_Bridge_Internal::handlePasswordResetRequest($payload);
         }
 
         if ($action === 'reset_password') {
-            ViteWP_Bridge_Internal::handlePasswordReset($payload);
+            AstroPress_Bridge_Internal::handlePasswordReset($payload);
         }
 
-        ViteWP_Bridge_Internal::jsonError(400, 'invalid_action', 'Unknown auth action.');
+        AstroPress_Bridge_Internal::jsonError(400, 'invalid_action', 'Unknown auth action.');
     }
 
     public static function handlePasswordLogin(array $payload, string $redirect_to): void
@@ -192,7 +192,7 @@ final class ViteWP_Bridge_Internal
         $remember = (bool) ($payload['remember'] ?? false);
 
         if ($login === '' || $password === '') {
-            ViteWP_Bridge_Internal::jsonError(400, 'missing_credentials', 'Email/username and password are required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'missing_credentials', 'Email/username and password are required.');
         }
 
         $user = wp_signon([
@@ -202,18 +202,18 @@ final class ViteWP_Bridge_Internal
         ], is_ssl());
 
         if (is_wp_error($user)) {
-            ViteWP_Bridge_Internal::jsonError(401, $user->get_error_code(), wp_strip_all_tags($user->get_error_message()));
+            AstroPress_Bridge_Internal::jsonError(401, $user->get_error_code(), wp_strip_all_tags($user->get_error_message()));
         }
 
         wp_set_current_user((int) $user->ID);
-        ViteWP_Bridge_Internal::json(ViteWP_Bridge_Internal::authContext('wp_rest', $redirect_to));
+        AstroPress_Bridge_Internal::json(AstroPress_Bridge_Internal::authContext('wp_rest', $redirect_to));
     }
 
     public static function handleUserRegistration(array $payload, string $redirect_to): void
     {
 
-        if (! ViteWP_Bridge_Internal::registrationEnabled()) {
-            ViteWP_Bridge_Internal::jsonError(403, 'registration_disabled', 'User registration is disabled.');
+        if (! AstroPress_Bridge_Internal::registrationEnabled()) {
+            AstroPress_Bridge_Internal::jsonError(403, 'registration_disabled', 'User registration is disabled.');
         }
 
         $email = sanitize_email((string) ($payload['email'] ?? ''));
@@ -226,29 +226,29 @@ final class ViteWP_Bridge_Internal
         $sign_in = (bool) ($payload['signIn'] ?? true);
 
         if ($email === '' || ! is_email($email)) {
-            ViteWP_Bridge_Internal::jsonError(400, 'invalid_email', 'A valid email address is required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'invalid_email', 'A valid email address is required.');
         }
 
         if (email_exists($email)) {
-            ViteWP_Bridge_Internal::jsonError(409, 'email_exists', 'An account with this email already exists.');
+            AstroPress_Bridge_Internal::jsonError(409, 'email_exists', 'An account with this email already exists.');
         }
 
         if ($password === '') {
-            ViteWP_Bridge_Internal::jsonError(400, 'missing_password', 'Password is required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'missing_password', 'Password is required.');
         }
 
         if ($username === '') {
-            $username = ViteWP_Bridge_Internal::uniqueUsernameFromEmail($email);
+            $username = AstroPress_Bridge_Internal::uniqueUsernameFromEmail($email);
         } elseif (! validate_username($username)) {
-            ViteWP_Bridge_Internal::jsonError(400, 'invalid_username', 'Username is invalid.');
+            AstroPress_Bridge_Internal::jsonError(400, 'invalid_username', 'Username is invalid.');
         } elseif (username_exists($username)) {
-            ViteWP_Bridge_Internal::jsonError(409, 'username_exists', 'An account with this username already exists.');
+            AstroPress_Bridge_Internal::jsonError(409, 'username_exists', 'An account with this username already exists.');
         }
 
-        $user_id = ViteWP_Bridge_Internal::createUser($email, $username, $password);
+        $user_id = AstroPress_Bridge_Internal::createUser($email, $username, $password);
 
         if (is_wp_error($user_id)) {
-            ViteWP_Bridge_Internal::jsonError(400, $user_id->get_error_code(), wp_strip_all_tags($user_id->get_error_message()));
+            AstroPress_Bridge_Internal::jsonError(400, $user_id->get_error_code(), wp_strip_all_tags($user_id->get_error_message()));
         }
 
         wp_update_user(array_filter([
@@ -261,7 +261,7 @@ final class ViteWP_Bridge_Internal
         $user = get_userdata((int) $user_id);
 
         if (! $user instanceof WP_User) {
-            ViteWP_Bridge_Internal::jsonError(500, 'user_not_found', 'The user was created but could not be loaded.');
+            AstroPress_Bridge_Internal::jsonError(500, 'user_not_found', 'The user was created but could not be loaded.');
         }
 
         if ($sign_in) {
@@ -270,10 +270,10 @@ final class ViteWP_Bridge_Internal
             do_action('wp_login', $user->user_login, $user);
         }
 
-        ViteWP_Bridge_Internal::json([
+        AstroPress_Bridge_Internal::json([
             'ok' => true,
-            'user' => ViteWP_Bridge_Internal::currentUser($user),
-            'auth' => ViteWP_Bridge_Internal::authContext('wp_rest', $redirect_to),
+            'user' => AstroPress_Bridge_Internal::currentUser($user),
+            'auth' => AstroPress_Bridge_Internal::authContext('wp_rest', $redirect_to),
         ]);
     }
 
@@ -328,16 +328,16 @@ final class ViteWP_Bridge_Internal
         $login = sanitize_text_field((string) ($payload['login'] ?? ''));
 
         if ($login === '') {
-            ViteWP_Bridge_Internal::jsonError(400, 'missing_login', 'Email or username is required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'missing_login', 'Email or username is required.');
         }
 
         $result = retrieve_password($login);
 
         if (is_wp_error($result)) {
-            ViteWP_Bridge_Internal::jsonError(400, $result->get_error_code(), wp_strip_all_tags($result->get_error_message()));
+            AstroPress_Bridge_Internal::jsonError(400, $result->get_error_code(), wp_strip_all_tags($result->get_error_message()));
         }
 
-        ViteWP_Bridge_Internal::json([
+        AstroPress_Bridge_Internal::json([
             'ok' => true,
             'message' => 'Password reset email sent.',
         ]);
@@ -351,18 +351,18 @@ final class ViteWP_Bridge_Internal
         $password = (string) ($payload['password'] ?? '');
 
         if ($login === '' || $key === '' || $password === '') {
-            ViteWP_Bridge_Internal::jsonError(400, 'missing_reset_fields', 'Login, reset key, and new password are required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'missing_reset_fields', 'Login, reset key, and new password are required.');
         }
 
         $user = check_password_reset_key($key, $login);
 
         if (is_wp_error($user)) {
-            ViteWP_Bridge_Internal::jsonError(400, $user->get_error_code(), wp_strip_all_tags($user->get_error_message()));
+            AstroPress_Bridge_Internal::jsonError(400, $user->get_error_code(), wp_strip_all_tags($user->get_error_message()));
         }
 
         reset_password($user, $password);
 
-        ViteWP_Bridge_Internal::json([
+        AstroPress_Bridge_Internal::json([
             'ok' => true,
             'message' => 'Password reset.',
         ]);
@@ -376,7 +376,7 @@ final class ViteWP_Bridge_Internal
 
         return [
             'loggedIn' => $logged_in,
-            'user' => $logged_in ? ViteWP_Bridge_Internal::currentUser($user) : null,
+            'user' => $logged_in ? AstroPress_Bridge_Internal::currentUser($user) : null,
             'nonce' => [
                 'action' => $action,
                 'value' => wp_create_nonce($action),
@@ -386,15 +386,15 @@ final class ViteWP_Bridge_Internal
             'logoutUrl' => wp_logout_url($redirect_to),
             'lostPasswordUrl' => wp_lostpassword_url($redirect_to),
             'registerUrl' => wp_registration_url(),
-            'woocommerce' => ViteWP_Bridge_Internal::woocommerceAuthContext(),
+            'woocommerce' => AstroPress_Bridge_Internal::woocommerceAuthContext(),
         ];
     }
 
     public static function requireInternalRequest(): void
     {
 
-        $configured_secret = defined('VITEWP_INTERNAL_SECRET') ? (string) VITEWP_INTERNAL_SECRET : '';
-        $request_secret = (string) ($_SERVER['HTTP_X_VITEWP_INTERNAL_SECRET'] ?? '');
+        $configured_secret = defined('ASTROPRESS_INTERNAL_SECRET') ? (string) ASTROPRESS_INTERNAL_SECRET : '';
+        $request_secret = (string) ($_SERVER['HTTP_X_ASTROPRESS_INTERNAL_SECRET'] ?? '');
 
         if ($configured_secret === '' || ! hash_equals($configured_secret, $request_secret)) {
             status_header(403);
@@ -425,7 +425,7 @@ final class ViteWP_Bridge_Internal
             'lastName' => (string) get_user_meta($user->ID, 'last_name', true),
             'roles' => array_values((array) $user->roles),
             'capabilities' => $capabilities,
-            'avatarUrls' => ViteWP_Bridge_Internal::avatarUrls((int) $user->ID),
+            'avatarUrls' => AstroPress_Bridge_Internal::avatarUrls((int) $user->ID),
         ];
     }
 
@@ -448,7 +448,7 @@ final class ViteWP_Bridge_Internal
 
         return [
             'active' => true,
-            'customer' => ViteWP_Bridge_Internal::woocommerceCustomer(),
+            'customer' => AstroPress_Bridge_Internal::woocommerceCustomer(),
             'myAccountUrl' => function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/my-account/'),
             'cartUrl' => function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/cart/'),
             'checkoutUrl' => function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : home_url('/checkout/'),
@@ -479,8 +479,8 @@ final class ViteWP_Bridge_Internal
             'dateModified' => $customer->get_date_modified() ? $customer->get_date_modified()->date('c') : null,
             'isPayingCustomer' => $customer->get_is_paying_customer(),
             'avatarUrl' => get_avatar_url($user_id) ?: '',
-            'billing' => ViteWP_Bridge_Internal::customerBillingAddress($customer),
-            'shipping' => ViteWP_Bridge_Internal::customerShippingAddress($customer),
+            'billing' => AstroPress_Bridge_Internal::customerBillingAddress($customer),
+            'shipping' => AstroPress_Bridge_Internal::customerShippingAddress($customer),
         ];
     }
 
@@ -494,13 +494,13 @@ final class ViteWP_Bridge_Internal
             $email = sanitize_email((string) $payload['email']);
 
             if ($email === '' || ! is_email($email)) {
-                ViteWP_Bridge_Internal::jsonError(400, 'invalid_email', 'A valid email address is required.');
+                AstroPress_Bridge_Internal::jsonError(400, 'invalid_email', 'A valid email address is required.');
             }
 
             $existing_user = get_user_by('email', $email);
 
             if ($existing_user instanceof WP_User && (int) $existing_user->ID !== $user_id) {
-                ViteWP_Bridge_Internal::jsonError(409, 'email_exists', 'An account with this email already exists.');
+                AstroPress_Bridge_Internal::jsonError(409, 'email_exists', 'An account with this email already exists.');
             }
 
             $customer->set_email($email);
@@ -524,11 +524,11 @@ final class ViteWP_Bridge_Internal
         }
 
         if (is_array($payload['billing'] ?? null)) {
-            ViteWP_Bridge_Internal::applyCustomerAddress($customer, $payload['billing'], 'billing');
+            AstroPress_Bridge_Internal::applyCustomerAddress($customer, $payload['billing'], 'billing');
         }
 
         if (is_array($payload['shipping'] ?? null)) {
-            ViteWP_Bridge_Internal::applyCustomerAddress($customer, $payload['shipping'], 'shipping');
+            AstroPress_Bridge_Internal::applyCustomerAddress($customer, $payload['shipping'], 'shipping');
         }
 
         $customer->save();
@@ -537,11 +537,11 @@ final class ViteWP_Bridge_Internal
             $result = wp_update_user($user_update);
 
             if (is_wp_error($result)) {
-                ViteWP_Bridge_Internal::jsonError(400, $result->get_error_code(), wp_strip_all_tags($result->get_error_message()));
+                AstroPress_Bridge_Internal::jsonError(400, $result->get_error_code(), wp_strip_all_tags($result->get_error_message()));
             }
         }
 
-        return ViteWP_Bridge_Internal::woocommerceCustomer() ?? [];
+        return AstroPress_Bridge_Internal::woocommerceCustomer() ?? [];
     }
 
     public static function woocommerceOrders(array $payload, int $user_id): array
@@ -562,7 +562,7 @@ final class ViteWP_Bridge_Internal
 
         $orders = wc_get_orders($query);
 
-        return array_values(array_map('ViteWP_Bridge_Internal::serializeWooCommerceOrder', $orders));
+        return array_values(array_map('AstroPress_Bridge_Internal::serializeWooCommerceOrder', $orders));
     }
 
     public static function woocommerceReviews(array $payload, int $user_id): array
@@ -580,7 +580,7 @@ final class ViteWP_Bridge_Internal
             $query['post_id'] = (int) $payload['productId'];
         }
 
-        return array_values(array_map('ViteWP_Bridge_Internal::serializeWooCommerceReview', get_comments($query)));
+        return array_values(array_map('AstroPress_Bridge_Internal::serializeWooCommerceReview', get_comments($query)));
     }
 
     public static function upsertWooCommerceReview(array $payload, int $user_id): array
@@ -594,22 +594,22 @@ final class ViteWP_Bridge_Internal
         $user = get_userdata($user_id);
 
         if (! $product || $product->post_type !== 'product') {
-            ViteWP_Bridge_Internal::jsonError(400, 'invalid_product', 'A valid product is required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'invalid_product', 'A valid product is required.');
         }
 
         if ($review === '') {
-            ViteWP_Bridge_Internal::jsonError(400, 'missing_review', 'Review content is required.');
+            AstroPress_Bridge_Internal::jsonError(400, 'missing_review', 'Review content is required.');
         }
 
         if (! $user instanceof WP_User) {
-            ViteWP_Bridge_Internal::jsonError(401, 'auth_required', 'Authentication is required.');
+            AstroPress_Bridge_Internal::jsonError(401, 'auth_required', 'Authentication is required.');
         }
 
         if ($review_id > 0) {
             $comment = get_comment($review_id);
 
             if (! $comment || (int) $comment->user_id !== $user_id || (int) $comment->comment_post_ID !== $product_id || $comment->comment_type !== 'review') {
-                ViteWP_Bridge_Internal::jsonError(404, 'review_not_found', 'Review not found.');
+                AstroPress_Bridge_Internal::jsonError(404, 'review_not_found', 'Review not found.');
             }
 
             wp_update_comment([
@@ -628,14 +628,14 @@ final class ViteWP_Bridge_Internal
             ]);
 
             if (is_wp_error($review_id)) {
-                ViteWP_Bridge_Internal::jsonError(400, $review_id->get_error_code(), wp_strip_all_tags($review_id->get_error_message()));
+                AstroPress_Bridge_Internal::jsonError(400, $review_id->get_error_code(), wp_strip_all_tags($review_id->get_error_message()));
             }
         }
 
         update_comment_meta((int) $review_id, 'rating', $rating);
         update_comment_meta((int) $review_id, 'verified', wc_customer_bought_product($user->user_email, $user_id, $product_id) ? 1 : 0);
 
-        return ViteWP_Bridge_Internal::serializeWooCommerceReview(get_comment((int) $review_id));
+        return AstroPress_Bridge_Internal::serializeWooCommerceReview(get_comment((int) $review_id));
     }
 
     public static function customerBillingAddress(WC_Customer $customer): array
@@ -713,7 +713,7 @@ final class ViteWP_Bridge_Internal
                 continue;
             }
 
-            $line_items[] = ViteWP_Bridge_Internal::serializeWooCommerceOrderLineItem($item);
+            $line_items[] = AstroPress_Bridge_Internal::serializeWooCommerceOrderLineItem($item);
         }
 
         return [
@@ -794,7 +794,7 @@ final class ViteWP_Bridge_Internal
     {
 
         if (! $comment) {
-            ViteWP_Bridge_Internal::jsonError(404, 'review_not_found', 'Review not found.');
+            AstroPress_Bridge_Internal::jsonError(404, 'review_not_found', 'Review not found.');
         }
 
         $product_id = (int) $comment->comment_post_ID;
@@ -816,7 +816,7 @@ final class ViteWP_Bridge_Internal
     public static function shouldOmitDefaultAssets(): bool
     {
 
-        return defined('VITEWP_OMIT_DEFAULT_ASSETS') && (bool) VITEWP_OMIT_DEFAULT_ASSETS;
+        return defined('ASTROPRESS_OMIT_DEFAULT_ASSETS') && (bool) ASTROPRESS_OMIT_DEFAULT_ASSETS;
     }
 
     public static function omitDefaultHookAssets(string $hook): void
@@ -840,10 +840,10 @@ final class ViteWP_Bridge_Internal
         remove_action('wp_head', 'wp_oembed_add_discovery_links');
         remove_action('wp_head', 'wp_oembed_add_host_js');
 
-        add_action('wp_enqueue_scripts', 'ViteWP_Bridge_Internal::dequeueDefaultAssets', 1000);
-        add_action('wp_print_scripts', 'ViteWP_Bridge_Internal::dequeueDefaultAssets', 0);
-        add_action('wp_print_styles', 'ViteWP_Bridge_Internal::dequeueDefaultAssets', 0);
-        ViteWP_Bridge_Internal::dequeueDefaultAssets();
+        add_action('wp_enqueue_scripts', 'AstroPress_Bridge_Internal::dequeueDefaultAssets', 1000);
+        add_action('wp_print_scripts', 'AstroPress_Bridge_Internal::dequeueDefaultAssets', 0);
+        add_action('wp_print_styles', 'AstroPress_Bridge_Internal::dequeueDefaultAssets', 0);
+        AstroPress_Bridge_Internal::dequeueDefaultAssets();
     }
 
     public static function dequeueDefaultAssets(): void
@@ -916,7 +916,7 @@ final class ViteWP_Bridge_Internal
     {
 
         status_header($status);
-        ViteWP_Bridge_Internal::json([
+        AstroPress_Bridge_Internal::json([
             'ok' => false,
             'code' => $code,
             'message' => $message,

@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
-export interface ViteWpAstroLike {
+export interface AstroPressAstroLike {
   request: Request;
   response?: {
     headers?: Headers;
@@ -10,7 +10,7 @@ export interface ViteWpAstroLike {
   redirect?: (path: string, status?: 300 | 301 | 302 | 303 | 304 | 307 | 308) => Response;
 }
 
-export interface ViteWpRequestContext {
+export interface AstroPressRequestContext {
   request: Request;
   url: URL;
   headers: Headers;
@@ -23,13 +23,13 @@ export interface ViteWpRequestContext {
   cache: Map<string, unknown>;
 }
 
-const requestContext = new AsyncLocalStorage<ViteWpRequestContext>();
+const requestContext = new AsyncLocalStorage<AstroPressRequestContext>();
 
-export function runWithRequestContext<T>(astro: ViteWpAstroLike, callback: () => T): T {
+export function runWithRequestContext<T>(astro: AstroPressAstroLike, callback: () => T): T {
   return requestContext.run(createRequestContext(astro), callback);
 }
 
-export function getRequestContext(astro?: ViteWpAstroLike): ViteWpRequestContext {
+export function getRequestContext(astro?: AstroPressAstroLike): AstroPressRequestContext {
   const context = requestContext.getStore();
 
   if (astro) {
@@ -41,31 +41,31 @@ export function getRequestContext(astro?: ViteWpAstroLike): ViteWpRequestContext
   }
 
   if (!context) {
-    throw new Error('No ViteWP request context found. Use this helper during Astro SSR or pass the Astro object explicitly.');
+    throw new Error('No AstroPress request context found. Use this helper during Astro SSR or pass the Astro object explicitly.');
   }
 
   return context;
 }
 
-export function getOptionalRequestContext(): ViteWpRequestContext | null {
+export function getOptionalRequestContext(): AstroPressRequestContext | null {
   return requestContext.getStore() ?? null;
 }
 
-export function forwardResponseCookies(response: Response, context: ViteWpRequestContext): void {
+export function forwardResponseCookies(response: Response, context: AstroPressRequestContext): void {
   for (const cookie of getResponseSetCookies(response.headers)) {
     context.responseHeaders?.append('set-cookie', cookie);
     context.responseCookies.push(cookie);
   }
 }
 
-function createRequestContext(astro: ViteWpAstroLike): ViteWpRequestContext {
+function createRequestContext(astro: AstroPressAstroLike): AstroPressRequestContext {
   const headers = astro.request.headers;
   return {
     request: astro.request,
     url: astro.url ?? new URL(astro.request.url),
     headers,
     cookie: headers.get('cookie') ?? '',
-    wooCartToken: readCookie(headers.get('cookie') ?? '', 'vitewp_woocommerce_cart_token'),
+    wooCartToken: readCookie(headers.get('cookie') ?? '', 'astropress_woocommerce_cart_token'),
     responseHeaders: astro.response?.headers,
     responseCookies: [],
     locals: astro.locals,

@@ -2,8 +2,8 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "paths": {
-      "wp-types": ["./.vitewp/types.d.ts"]
+      "wp-types": ["./.astropress/types.d.ts"]
     }
   },
-  "include": [".astro/types.d.ts", ".vitewp/types.d.ts", "src"]
+  "include": [".astro/types.d.ts", ".astropress/types.d.ts", "src"]
 }

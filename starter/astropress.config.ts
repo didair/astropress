@@ -1,11 +1,11 @@
-import { defineConfig } from './src/index.js';
+import { defineConfig } from 'astropress';
 
 export default defineConfig({
   database: {
     driver: 'mysql',
     host: process.env.WP_DB_HOST ?? '127.0.0.1',
     port: Number(process.env.WP_DB_PORT ?? 3306),
-    name: process.env.WP_DB_NAME ?? 'vitewp',
+    name: process.env.WP_DB_NAME ?? 'astropress',
     user: process.env.WP_DB_USER ?? 'root',
     password: process.env.WP_DB_PASSWORD ?? '',
     tablePrefix: process.env.WP_DB_TABLE_PREFIX ?? 'wp_',
@@ -31,7 +31,7 @@ export default defineConfig({
     directory: 'src/templates',
   },
   types: {
-    output: '.vitewp/types.d.ts',
+    output: '.astropress/types.d.ts',
   },
   blocks: {
     entries: ['src/blocks/**/block.json'],

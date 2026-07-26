@@ -2,16 +2,16 @@ import { getWordPressBaseUrl } from './wordpress/client.js';
 import {
   authRequestHeaders,
   getAuthContext,
-  ViteWpAuthActionError,
-  ViteWpAuthRequiredError,
+  AstroPressAuthActionError,
+  AstroPressAuthRequiredError,
   type WpWooCommerceCustomer,
 } from './wordpress/auth.js';
-import { forwardResponseCookies, getRequestContext, type ViteWpAstroLike, type ViteWpRequestContext } from './wordpress/context.js';
+import { forwardResponseCookies, getRequestContext, type AstroPressAstroLike, type AstroPressRequestContext } from './wordpress/context.js';
 
 type QueryValue = string | number | boolean | Array<string | number | boolean> | undefined | null;
-type StoreRequestAuth = { cookie?: string; nonce?: string; cartToken?: string; context?: ViteWpRequestContext };
+type StoreRequestAuth = { cookie?: string; nonce?: string; cartToken?: string; context?: AstroPressRequestContext };
 
-const wooCartTokenCookie = 'vitewp_woocommerce_cart_token';
+const wooCartTokenCookie = 'astropress_woocommerce_cart_token';
 
 export interface WooQuery {
   page?: number;
@@ -388,50 +388,50 @@ export async function getProductReviews(query: WooReviewQuery = {}): Promise<Woo
   return getStoreJson<WooReview[]>('products/reviews', params);
 }
 
-export async function getCurrentCustomer(input?: ViteWpAstroLike): Promise<WooCustomer | null> {
+export async function getCurrentCustomer(input?: AstroPressAstroLike): Promise<WooCustomer | null> {
   return postWooCommerceAccountJson<WooCustomer | null>('customer', {}, input);
 }
 
-export async function updateCurrentCustomer(update: WooUpdateCustomerInput, input?: ViteWpAstroLike): Promise<WooCustomer> {
+export async function updateCurrentCustomer(update: WooUpdateCustomerInput, input?: AstroPressAstroLike): Promise<WooCustomer> {
   return postWooCommerceAccountJson<WooCustomer>('update_customer', { ...update }, input);
 }
 
-export async function requireCustomer(input?: ViteWpAstroLike): Promise<WooCustomer> {
+export async function requireCustomer(input?: AstroPressAstroLike): Promise<WooCustomer> {
   const customer = await getCurrentCustomer(input);
 
   if (!customer) {
     const auth = await getAuthContext(input);
-    throw new ViteWpAuthRequiredError(auth.woocommerce?.myAccountUrl ?? auth.loginUrl);
+    throw new AstroPressAuthRequiredError(auth.woocommerce?.myAccountUrl ?? auth.loginUrl);
   }
 
   return customer;
 }
 
-export async function getCustomerOrders(query: WooOrderQuery = {}, input?: ViteWpAstroLike): Promise<WooOrder[]> {
+export async function getCustomerOrders(query: WooOrderQuery = {}, input?: AstroPressAstroLike): Promise<WooOrder[]> {
   return postWooCommerceAccountJson<WooOrder[]>('orders', { ...query }, input);
 }
 
 export async function getCurrentCustomerReviews(
   query: WooCustomerReviewQuery = {},
-  input?: ViteWpAstroLike,
+  input?: AstroPressAstroLike,
 ): Promise<WooCustomerReview[]> {
   return postWooCommerceAccountJson<WooCustomerReview[]>('reviews', { ...query }, input);
 }
 
 export async function createOrUpdateCurrentCustomerReview(
   review: WooCustomerReviewInput,
-  input?: ViteWpAstroLike,
+  input?: AstroPressAstroLike,
 ): Promise<WooCustomerReview> {
   return postWooCommerceAccountJson<WooCustomerReview>('upsert_review', { ...review }, input);
 }
 
 export const upsertCurrentCustomerReview = createOrUpdateCurrentCustomerReview;
 
-export async function getCart(input?: ViteWpAstroLike): Promise<WooCart> {
+export async function getCart(input?: AstroPressAstroLike): Promise<WooCart> {
   return getStoreJson<WooCart>('cart', {}, [], await getCartRequestAuth(input));
 }
 
-export async function addCartItem(options: WooAddCartItemOptions, input?: ViteWpAstroLike): Promise<WooCart> {
+export async function addCartItem(options: WooAddCartItemOptions, input?: AstroPressAstroLike): Promise<WooCart> {
   const body: Record<string, unknown> = {
     id: options.id,
   };
@@ -455,11 +455,11 @@ export async function addCartItem(options: WooAddCartItemOptions, input?: ViteWp
 
 export const addToCart = addCartItem;
 
-export async function updateCartItem(options: WooUpdateCartItemOptions, input?: ViteWpAstroLike): Promise<WooCart> {
+export async function updateCartItem(options: WooUpdateCartItemOptions, input?: AstroPressAstroLike): Promise<WooCart> {
   return postStoreJson<WooCart>('cart/update-item', { ...options }, await getCartRequestAuth(input));
 }
 
-export async function removeCartItem(options: WooRemoveCartItemOptions, input?: ViteWpAstroLike): Promise<WooCart> {
+export async function removeCartItem(options: WooRemoveCartItemOptions, input?: AstroPressAstroLike): Promise<WooCart> {
   return postStoreJson<WooCart>('cart/remove-item', { ...options }, await getCartRequestAuth(input));
 }
 
@@ -470,17 +470,17 @@ export function getWooCommerceStoreApiBase() {
 async function postWooCommerceAccountJson<T>(
   action: string,
   body: Record<string, unknown>,
-  input?: ViteWpAstroLike,
+  input?: AstroPressAstroLike,
 ): Promise<T> {
   const context = getRequestContext(input);
-  const phpUrl = process.env.VITEWP_PHP_URL;
-  const secret = process.env.VITEWP_INTERNAL_SECRET;
+  const phpUrl = process.env.ASTROPRESS_PHP_URL;
+  const secret = process.env.ASTROPRESS_INTERNAL_SECRET;
 
   if (!phpUrl || !secret) {
-    throw new Error('WooCommerce account helpers are only available during ViteWP SSR. Start the site with `vite-wp dev`.');
+    throw new Error('WooCommerce account helpers are only available during AstroPress SSR. Start the site with `astropress dev`.');
   }
 
-  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?vitewp_internal_woocommerce=1`, {
+  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?astropress_internal_woocommerce=1`, {
     method: 'POST',
     headers: {
       ...authRequestHeaders(context, secret),
@@ -491,7 +491,7 @@ async function postWooCommerceAccountJson<T>(
 
   if (!response.ok) {
     const error = await readWooCommerceAccountError(response);
-    throw new ViteWpAuthActionError(response.status, error.code, error.message);
+    throw new AstroPressAuthActionError(response.status, error.code, error.message);
   }
 
   forwardResponseCookies(response, context);
@@ -593,7 +593,7 @@ async function postStoreJson<T>(
   return response.json() as Promise<T>;
 }
 
-async function getCartRequestAuth(input?: ViteWpAstroLike) {
+async function getCartRequestAuth(input?: AstroPressAstroLike) {
   const context = getRequestContext(input);
   const auth = await getAuthContext(input);
   const cartToken = context.wooCartToken ?? readCookie(context.cookie, wooCartTokenCookie);
@@ -606,7 +606,7 @@ async function getCartRequestAuth(input?: ViteWpAstroLike) {
   };
 }
 
-function persistStoreCartToken(response: Response, context: ViteWpRequestContext) {
+function persistStoreCartToken(response: Response, context: AstroPressRequestContext) {
   const cartToken = response.headers.get('cart-token');
 
   if (!cartToken) {

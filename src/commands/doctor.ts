@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { loadViteWpConfig, type LoadedViteWpConfig } from '../config.js';
+import { loadAstroPressConfig, type LoadedAstroPressConfig } from '../config.js';
 
 const execFileAsync = promisify(execFile);
 const MINIMUM_PHP_VERSION = '8.3.0';
@@ -16,19 +16,19 @@ interface Check {
 }
 
 export async function runDoctor() {
-  const config = await loadViteWpConfig();
+  const config = await loadAstroPressConfig();
   const result = await runDoctorChecks(config);
   process.exitCode = result.errors > 0 ? 1 : 0;
 }
 
-export async function runDoctorChecks(config: LoadedViteWpConfig, options: { live?: boolean } = {}) {
+export async function runDoctorChecks(config: LoadedAstroPressConfig, options: { live?: boolean } = {}) {
   const live = options.live ?? true;
   const checks: Check[] = [];
 
   checks.push({
     status: config.configFile ? 'pass' : 'warn',
-    label: 'ViteWP config',
-    detail: config.configFile ?? 'No vitewp.config.* file found; using defaults.',
+    label: 'AstroPress config',
+    detail: config.configFile ?? 'No astropress.config.* file found; using defaults.',
   });
 
   checks.push(fileCheck(config.root, 'astro.config.mjs', 'Astro config'));
@@ -40,9 +40,9 @@ export async function runDoctorChecks(config: LoadedViteWpConfig, options: { liv
   checks.push(composerLockCheck(config.root, config.composer.wordpressPackage));
   checks.push(fileCheck(config.root, `${config.wordpress.docroot}/wp-settings.php`, 'Composer-installed WordPress core'));
   checks.push(fileCheck(config.root, `${config.wordpress.docroot}/wp-config.php`, 'Generated wp-config.php'));
-  checks.push(fileCheck(config.root, `${config.wordpress.contentDir}/mu-plugins/vitewp-bridge.php`, 'ViteWP bridge mu-plugin'));
-  checks.push(fileCheck(config.root, `${config.wordpress.contentDir}/mu-plugins/vitewp-bridge/class-bridge.php`, 'ViteWP bridge classes'));
-  checks.push(fileCheck(config.root, `${config.wordpress.contentDir}/themes/vitewp/style.css`, 'ViteWP placeholder theme'));
+  checks.push(fileCheck(config.root, `${config.wordpress.contentDir}/mu-plugins/astropress-bridge.php`, 'AstroPress bridge mu-plugin'));
+  checks.push(fileCheck(config.root, `${config.wordpress.contentDir}/mu-plugins/astropress-bridge/class-bridge.php`, 'AstroPress bridge classes'));
+  checks.push(fileCheck(config.root, `${config.wordpress.contentDir}/themes/astropress/style.css`, 'AstroPress placeholder theme'));
   checks.push(wordPressAssetsCheck(config));
   checks.push(templateDirectoryCheck(config));
   checks.push(databaseConfigCheck(config));
@@ -77,7 +77,7 @@ function fileCheck(root: string, relativePath: string, label: string): Check {
     : { status: 'warn', label, detail: `${relativePath} does not exist yet.` };
 }
 
-function templateDirectoryCheck(config: LoadedViteWpConfig): Check {
+function templateDirectoryCheck(config: LoadedAstroPressConfig): Check {
   const directory = join(config.root, config.templates.directory);
 
   return existsSync(directory)
@@ -108,7 +108,7 @@ async function phpRuntimeCheck(): Promise<Check> {
       return {
         status: 'fail',
         label: 'PHP runtime',
-        detail: `PHP ${version} found; ViteWP requires PHP ${MINIMUM_PHP_VERSION} or newer.`,
+        detail: `PHP ${version} found; AstroPress requires PHP ${MINIMUM_PHP_VERSION} or newer.`,
       };
     }
 
@@ -141,7 +141,7 @@ function versionParts(version: string) {
   return version.split(/[.-]/).map((part) => Number.parseInt(part, 10) || 0);
 }
 
-function databaseConfigCheck(config: LoadedViteWpConfig): Check {
+function databaseConfigCheck(config: LoadedAstroPressConfig): Check {
   const database = config.database;
   const missing = [
     ['host', database.host],
@@ -204,7 +204,7 @@ function composerPhpRequirementCheck(root: string): Check {
       return {
         status: 'warn',
         label: 'Composer PHP requirement',
-        detail: `Could not verify "${requirement}"; ViteWP expects PHP ${MINIMUM_PHP_VERSION} or newer.`,
+        detail: `Could not verify "${requirement}"; AstroPress expects PHP ${MINIMUM_PHP_VERSION} or newer.`,
       };
     }
 
@@ -212,7 +212,7 @@ function composerPhpRequirementCheck(root: string): Check {
       return {
         status: 'fail',
         label: 'Composer PHP requirement',
-        detail: `"${requirement}" allows PHP ${minimum}; ViteWP requires PHP ${MINIMUM_PHP_VERSION} or newer.`,
+        detail: `"${requirement}" allows PHP ${minimum}; AstroPress requires PHP ${MINIMUM_PHP_VERSION} or newer.`,
       };
     }
 
@@ -295,7 +295,7 @@ function composerWordPressCheck(root: string, wordpressPackage: string): Check {
   }
 }
 
-function composerInstallDirCheck(config: LoadedViteWpConfig): Check {
+function composerInstallDirCheck(config: LoadedAstroPressConfig): Check {
   const composerPath = join(config.root, 'composer.json');
 
   if (!existsSync(composerPath)) {
@@ -403,7 +403,7 @@ function runtimeFilesIgnoredCheck(root: string, contentDir: string): Check {
 
   const gitignore = readFileSync(gitignorePath, 'utf8');
   const required = [
-    `${contentDir}/vitewp-assets/`,
+    `${contentDir}/astropress-assets/`,
     `${contentDir}/uploads/`,
     `${contentDir}/debug.log`,
   ];
@@ -418,22 +418,22 @@ function runtimeFilesIgnoredCheck(root: string, contentDir: string): Check {
       };
 }
 
-function requiredPluginFileChecks(config: LoadedViteWpConfig): Check[] {
+function requiredPluginFileChecks(config: LoadedAstroPressConfig): Check[] {
   return config.wordpress.requiredPlugins.map((plugin) => {
     const directory = `${config.wordpress.contentDir}/plugins/${plugin}`;
     return fileCheck(config.root, directory, `Required plugin files: ${plugin}`);
   });
 }
 
-function pluginPresetChecks(config: LoadedViteWpConfig): Check[] {
+function pluginPresetChecks(config: LoadedAstroPressConfig): Check[] {
   return config.wordpress.pluginPresets.map((preset) => {
     const slug = pluginSlugForPreset(preset);
     return fileCheck(config.root, `${config.wordpress.contentDir}/plugins/${slug}`, `Plugin preset files: ${preset}`);
   });
 }
 
-function wordPressAssetsCheck(config: LoadedViteWpConfig): Check {
-  const manifest = join(config.root, config.blocks.outDir, 'vitewp-manifest.json');
+function wordPressAssetsCheck(config: LoadedAstroPressConfig): Check {
+  const manifest = join(config.root, config.blocks.outDir, 'astropress-manifest.json');
   const hasBlockSource = existsSync(join(config.root, 'src/blocks'));
   const hasPluginEntries = config.plugins.entries.length > 0;
 
@@ -450,12 +450,12 @@ function wordPressAssetsCheck(config: LoadedViteWpConfig): Check {
     : {
         status: 'warn',
         label: 'WordPress asset manifest',
-        detail: `Run vite-wp dev to generate ${relativePath(config.root, manifest)}.`,
+        detail: `Run astropress dev to generate ${relativePath(config.root, manifest)}.`,
       };
 }
 
-async function wordpressHealthCheck(config: LoadedViteWpConfig): Promise<Check> {
-  const url = `${config.wordpress.url.replace(/\/$/, '')}/wp-json/vitewp/v1/health`;
+async function wordpressHealthCheck(config: LoadedAstroPressConfig): Promise<Check> {
+  const url = `${config.wordpress.url.replace(/\/$/, '')}/wp-json/astropress/v1/health`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -466,7 +466,7 @@ async function wordpressHealthCheck(config: LoadedViteWpConfig): Promise<Check> 
       return {
         status: 'warn',
         label: 'WordPress health endpoint',
-        detail: `${url} returned ${response.status}. Start vite-wp dev if the runtime is offline.`,
+        detail: `${url} returned ${response.status}. Start astropress dev if the runtime is offline.`,
       };
     }
 
@@ -489,7 +489,7 @@ async function wordpressHealthCheck(config: LoadedViteWpConfig): Promise<Check> 
       return {
         status: 'fail',
         label: 'WordPress health endpoint',
-        detail: `WordPress is running PHP ${health.phpVersion}; ViteWP requires PHP ${MINIMUM_PHP_VERSION} or newer.`,
+        detail: `WordPress is running PHP ${health.phpVersion}; AstroPress requires PHP ${MINIMUM_PHP_VERSION} or newer.`,
       };
     }
 
@@ -510,14 +510,14 @@ async function wordpressHealthCheck(config: LoadedViteWpConfig): Promise<Check> 
     return {
       status: 'warn',
       label: 'WordPress health endpoint',
-      detail: `Could not reach ${url}. Start vite-wp dev to run live health checks.`,
+      detail: `Could not reach ${url}. Start astropress dev to run live health checks.`,
     };
   } finally {
     clearTimeout(timeout);
   }
 }
 
-async function wordpressAuthRoutesCheck(config: LoadedViteWpConfig): Promise<Check> {
+async function wordpressAuthRoutesCheck(config: LoadedAstroPressConfig): Promise<Check> {
   const url = `${config.wordpress.url.replace(/\/$/, '')}/wp-login.php`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
@@ -545,7 +545,7 @@ async function wordpressAuthRoutesCheck(config: LoadedViteWpConfig): Promise<Che
     return {
       status: 'warn',
       label: 'WordPress auth routes',
-      detail: `Could not reach ${url}. Start vite-wp dev to check login routing.`,
+      detail: `Could not reach ${url}. Start astropress dev to check login routing.`,
     };
   } finally {
     clearTimeout(timeout);
@@ -566,7 +566,7 @@ function relativePath(root: string, file: string) {
 }
 
 function printChecks(checks: Check[]) {
-  console.log('ViteWP doctor');
+  console.log('AstroPress doctor');
   console.log('');
 
   for (const check of checks) {

@@ -1,5 +1,5 @@
 ---
-import { getMenuByLocation, getMenuBySlug } from 'vite-wp/wordpress';
+import { getMenuByLocation, getMenuBySlug } from 'astropress/wordpress';
 
 interface Props {
   location?: string;
@@ -10,7 +10,7 @@ const { location = 'primary', slug } = Astro.props;
 const menu = slug ? await getMenuBySlug(slug) : await getMenuByLocation(location);
 ---
 <header>
-  <a href="/">ViteWP</a>
+  <a href="/">AstroPress</a>
   {menu && (
     <nav aria-label={menu.name}>
       <ul>

@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import { getLiveEntry } from 'astro:content';
-import { createTemplateContext, templateCandidates } from 'vite-wp/wordpress';
+import { createTemplateContext, templateCandidates } from 'astropress/wordpress';
 import type { WpResolvedRoute } from 'wp-types';
 
 type TemplateModule = {
@@ -32,7 +32,7 @@ const defaultLayouts = import.meta.glob<TemplateModule>('../defaults/templates/l
 let Template: any = null;
 let Layout: any = null;
 let templatePath = '';
-let templateSource: 'project' | 'vite-wp' | null = null;
+let templateSource: 'project' | 'astropress' | null = null;
 const showDebug = import.meta.env.DEV;
 let context = null;
 
@@ -61,7 +61,7 @@ if (route) {
     if (loader) {
       Template = (await loader()).default;
       templatePath = candidate;
-      templateSource = projectLoader ? 'project' : 'vite-wp';
+      templateSource = projectLoader ? 'project' : 'astropress';
       break;
     }
   }
@@ -74,7 +74,7 @@ if (route) {
   if (loader) {
     Template = (await loader()).default;
     templatePath = '404.astro';
-    templateSource = projectLoader ? 'project' : 'vite-wp';
+    templateSource = projectLoader ? 'project' : 'astropress';
   }
 }
 

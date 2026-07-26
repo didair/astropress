@@ -57,7 +57,7 @@ export function waitForExit(processes: ManagedProcess[]): Promise<void> {
     for (const managed of processes) {
       managed.child.once('exit', (code) => {
         if (!shuttingDown && managed.critical !== false) {
-          console.log(`\n${managed.name} exited with code ${code ?? 'unknown'}. Stopping ViteWP dev runtime.`);
+          console.log(`\n${managed.name} exited with code ${code ?? 'unknown'}. Stopping AstroPress dev runtime.`);
           stopAll();
         }
       });

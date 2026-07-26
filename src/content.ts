@@ -29,7 +29,7 @@ export interface WpRouteCollectionFilter {
 
 export function wpRouteLoader(): LiveLoader<WpResolvedRouteData, WpRouteEntryFilter, WpRouteCollectionFilter> {
   return {
-    name: 'vitewp:routes',
+    name: 'astropress:routes',
     async loadEntry({ filter }) {
       const path = filter.path ?? filter.id ?? '/';
       const route = await resolveWordPressRoute(path);
@@ -88,7 +88,7 @@ export function wpPostTypeLoader(options: WpPostTypeLoaderOptions): LiveLoader<W
   const restBase = options.restBase ?? defaultRestBase(options.postType);
 
   return {
-    name: `vitewp:${options.postType}`,
+    name: `astropress:${options.postType}`,
     async loadEntry({ filter }) {
       const item = filter.id !== undefined
         ? await fetchWordPressItemById(restBase, filter.id)
@@ -139,7 +139,7 @@ export interface WpMenuCollectionFilter {
 
 export function wpMenuLoader(): LiveLoader<WpMenuData, WpMenuEntryFilter, WpMenuCollectionFilter> {
   return {
-    name: 'vitewp:menus',
+    name: 'astropress:menus',
     async loadEntry({ filter }) {
       const payload = await getMenus();
       const locationId = filter.location ? payload.locations[filter.location] : undefined;
@@ -212,7 +212,7 @@ async function fetchWordPressList(url: URL) {
 }
 
 async function fetchBridgePost(id: string | number, restBase?: string) {
-  const url = new URL(`${getWordPressBaseUrl()}/wp-json/vitewp/v1/post`);
+  const url = new URL(`${getWordPressBaseUrl()}/wp-json/astropress/v1/post`);
   url.searchParams.set('id', String(id));
 
   if (restBase) {

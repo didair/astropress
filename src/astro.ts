@@ -3,13 +3,13 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { AstroIntegration } from 'astro';
 
-export interface ViteWpAstroOptions {
+export interface AstroPressAstroOptions {
   configFile?: string;
 }
 
-export default function vitewp(_options: ViteWpAstroOptions = {}): AstroIntegration {
+export default function astropress(_options: AstroPressAstroOptions = {}): AstroIntegration {
   return {
-    name: 'vitewp',
+    name: 'astropress',
     hooks: {
       'astro:config:setup': ({ command, config, injectRoute, addDevToolbarApp, addMiddleware, logger, updateConfig }) => {
         updateConfig({
@@ -18,7 +18,7 @@ export default function vitewp(_options: ViteWpAstroOptions = {}): AstroIntegrat
               alias: [
                 {
                   find: 'wp-types',
-                  replacement: fileURLToPath(new URL('./.vitewp/types.d.ts', config.root)),
+                  replacement: fileURLToPath(new URL('./.astropress/types.d.ts', config.root)),
                 },
                 ...(isSourceIntegration() ? sourceAliases() : []),
               ],
@@ -41,14 +41,14 @@ export default function vitewp(_options: ViteWpAstroOptions = {}): AstroIntegrat
 
         if (command === 'dev') {
           addDevToolbarApp({
-            id: 'vitewp',
-            name: 'ViteWP',
+            id: 'astropress',
+            name: 'AstroPress',
             icon: 'sitemap',
             entrypoint: getDevToolbarEntrypoint(),
           });
         }
 
-        logger.info('ViteWP integration loaded.');
+        logger.info('AstroPress integration loaded.');
       },
     },
   };
@@ -83,13 +83,13 @@ function getRequestContextMiddlewareEntrypoint() {
 }
 
 function getDevToolbarEntrypoint() {
-  const sourceEntrypoint = new URL('./dev-toolbar/vitewp-toolbar.ts', import.meta.url);
+  const sourceEntrypoint = new URL('./dev-toolbar/astropress-toolbar.ts', import.meta.url);
 
   if (existsSync(fileURLToPath(sourceEntrypoint))) {
     return sourceEntrypoint;
   }
 
-  return new URL('./dev-toolbar/vitewp-toolbar.js', import.meta.url);
+  return new URL('./dev-toolbar/astropress-toolbar.js', import.meta.url);
 }
 
 function isSourceIntegration() {
@@ -98,10 +98,10 @@ function isSourceIntegration() {
 
 function sourceAliases() {
   return [
-    alias('vite-wp/wordpress', './wordpress/index.ts'),
-    alias('vite-wp/woocommerce', './woocommerce.ts'),
-    alias('vite-wp/astro', './astro.ts'),
-    alias('vite-wp', './index.ts'),
+    alias('astropress/wordpress', './wordpress/index.ts'),
+    alias('astropress/woocommerce', './woocommerce.ts'),
+    alias('astropress/astro', './astro.ts'),
+    alias('astropress', './index.ts'),
   ];
 }
 

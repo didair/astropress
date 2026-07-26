@@ -1,6 +1,6 @@
 {
-  "name": "vitewp/project",
-  "description": "Composer-managed WordPress runtime for a ViteWP project.",
+  "name": "astropress/project",
+  "description": "Composer-managed WordPress runtime for an AstroPress project.",
   "type": "project",
   "require": {
     "php": ">=8.3",

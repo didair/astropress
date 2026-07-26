@@ -4,9 +4,9 @@ import { getRequestContext, runWithRequestContext } from './wordpress/context.js
 export const onRequest = defineMiddleware((context, next) => {
   return runWithRequestContext(context, async () => {
     const response = await next();
-    const viteWpContext = getRequestContext();
+    const astroPressContext = getRequestContext();
 
-    for (const cookie of viteWpContext.responseCookies) {
+    for (const cookie of astroPressContext.responseCookies) {
       response.headers.append('set-cookie', cookie);
     }
 

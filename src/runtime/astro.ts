@@ -1,11 +1,11 @@
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
-import type { LoadedViteWpConfig } from '../config.js';
+import type { LoadedAstroPressConfig } from '../config.js';
 import { spawnManaged, type ManagedProcess } from './process.js';
 
 const execFileAsync = promisify(execFile);
 
-export async function stopAstroServer(config: LoadedViteWpConfig) {
+export async function stopAstroServer(config: LoadedAstroPressConfig) {
   const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
   await execFileAsync(npx, ['astro', 'dev', 'stop'], {
@@ -16,7 +16,7 @@ export async function stopAstroServer(config: LoadedViteWpConfig) {
   await killStaleAstroProcesses(config);
 }
 
-export async function startAstroServer(config: LoadedViteWpConfig): Promise<ManagedProcess> {
+export async function startAstroServer(config: LoadedAstroPressConfig): Promise<ManagedProcess> {
   const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
   await stopAstroServer(config);
@@ -57,10 +57,10 @@ export async function startAstroServer(config: LoadedViteWpConfig): Promise<Mana
 }
 
 function isVerbose() {
-  return process.env.VITEWP_VERBOSE === '1';
+  return process.env.ASTROPRESS_VERBOSE === '1';
 }
 
-async function killStaleAstroProcesses(config: LoadedViteWpConfig) {
+async function killStaleAstroProcesses(config: LoadedAstroPressConfig) {
   if (process.platform === 'win32') return;
 
   const { stdout } = await execFileAsync('ps', ['-Ao', 'pid=,command=']).catch(() => ({ stdout: '' }));

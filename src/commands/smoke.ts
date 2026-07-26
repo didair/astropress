@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import net from 'node:net';
-import { loadViteWpConfig } from '../config.js';
+import { loadAstroPressConfig } from '../config.js';
 
 interface SmokeCheck {
   label: string;
@@ -8,7 +8,7 @@ interface SmokeCheck {
 }
 
 export async function runSmoke() {
-  const config = await loadViteWpConfig();
+  const config = await loadAstroPressConfig();
   const baseUrl = config.wordpress.url.replace(/\/$/, '');
   const checks: SmokeCheck[] = [
     {
@@ -16,8 +16,8 @@ export async function runSmoke() {
       run: () => expectHttp(`${baseUrl}/`, [200]),
     },
     {
-      label: 'ViteWP dev route metadata',
-      run: () => expectBody(`${baseUrl}/`, 'window.__VITEWP_ROUTE_INFO__'),
+      label: 'AstroPress dev route metadata',
+      run: () => expectBody(`${baseUrl}/`, 'window.__ASTROPRESS_ROUTE_INFO__'),
     },
     {
       label: 'WordPress admin route',
@@ -29,19 +29,19 @@ export async function runSmoke() {
     },
     {
       label: 'wp-content static asset',
-      run: () => expectHttp(`${baseUrl}/wp-content/themes/vitewp/style.css`, [200], 'text/css'),
+      run: () => expectHttp(`${baseUrl}/wp-content/themes/astropress/style.css`, [200], 'text/css'),
     },
     {
-      label: 'ViteWP route bridge',
-      run: () => expectJson(`${baseUrl}/wp-json/vitewp/v1/resolve?path=/`, ['found', 'kind']),
+      label: 'AstroPress route bridge',
+      run: () => expectJson(`${baseUrl}/wp-json/astropress/v1/resolve?path=/`, ['found', 'kind']),
     },
     {
-      label: 'ViteWP type metadata',
-      run: () => expectJson(`${baseUrl}/wp-json/vitewp/v1/types`, ['postTypes', 'taxonomies']),
+      label: 'AstroPress type metadata',
+      run: () => expectJson(`${baseUrl}/wp-json/astropress/v1/types`, ['postTypes', 'taxonomies']),
     },
     {
       label: 'Internal hook endpoint is not public',
-      run: () => expectHttp(`${baseUrl}/index.php?vitewp_internal_hook=1`, [403], 'application/json'),
+      run: () => expectHttp(`${baseUrl}/index.php?astropress_internal_hook=1`, [403], 'application/json'),
     },
     {
       label: 'Vite HMR websocket',
@@ -49,7 +49,7 @@ export async function runSmoke() {
     },
   ];
 
-  console.log('ViteWP smoke test');
+  console.log('AstroPress smoke test');
   console.log('');
 
   let failures = 0;

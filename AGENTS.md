@@ -1,10 +1,10 @@
-# ViteWP End Vision
+# AstroPress End Vision
 
 ## North Star
 
-ViteWP should become the fastest, most predictable way to build real WordPress sites with Astro and modern JavaScript while keeping WordPress excellent at what it already does: content modeling, editing workflows, authentication, media, plugins, Composer-based PHP dependencies, and publishing.
+AstroPress should become the fastest, most predictable way to build real WordPress sites with Astro and modern JavaScript while keeping WordPress excellent at what it already does: content modeling, editing workflows, authentication, media, plugins, Composer-based PHP dependencies, and publishing.
 
-The important distinction: ViteWP should not primarily be an Astro app that connects to a separate WordPress instance. In local development, the ViteWP project should **be the WordPress instance**. `npm run dev` should start WordPress/PHP and Astro together, expose one local site URL, and make admin, REST, media, previews, and Astro-rendered frontend routes work in unison.
+The important distinction: AstroPress should not primarily be an Astro app that connects to a separate WordPress instance. In local development, the AstroPress project should **be the WordPress instance**. `npm run dev` should start WordPress/PHP and Astro together, expose one local site URL, and make admin, REST, media, previews, and Astro-rendered frontend routes work in unison.
 
 The end state is a unified development experience where a developer can run one command and get:
 
@@ -20,7 +20,7 @@ The end state is a unified development experience where a developer can run one 
 - framework-agnostic component authoring through Astro integrations and islands,
 - and production-ready build outputs for both the Astro frontend and WordPress-side assets.
 
-Astro should be the required app foundation. ViteWP should not try to become a universal router/runtime abstraction over React, Vue, Svelte, or vanilla Vite apps. Instead, Astro provides the routing, rendering, bundling integration, server runtime, and multi-framework component model. Developers can still write React, Vue, Svelte, Solid, or vanilla components inside an Astro project when useful.
+Astro should be the required app foundation. AstroPress should not try to become a universal router/runtime abstraction over React, Vue, Svelte, or vanilla Vite apps. Instead, Astro provides the routing, rendering, bundling integration, server runtime, and multi-framework component model. Developers can still write React, Vue, Svelte, Solid, or vanilla components inside an Astro project when useful.
 
 ## Product Promise
 
@@ -41,12 +41,12 @@ Today, headless WordPress work often means stitching together separate concerns:
 - deployment artifacts,
 - and framework-specific conventions.
 
-ViteWP should make these feel like one system.
+AstroPress should make these feel like one system.
 
 The ideal mental model:
 
 ```bash
-npm create vitewp my-site
+npm create astropress my-site
 cd my-site
 npm run dev
 ```
@@ -57,7 +57,7 @@ From there, the developer should have a project-owned WordPress install, Astro, 
 
 ### One local command
 
-`vite-wp dev` should orchestrate the development stack:
+`astropress dev` should orchestrate the development stack:
 
 - install/validate WordPress from Composer,
 - start the local PHP/WordPress runtime,
@@ -73,9 +73,9 @@ The developer should not need to understand every moving part before building a 
 
 ### Astro-native by design
 
-Astro should own the page/router layer. ViteWP should extend Astro with WordPress-aware conventions rather than replacing Astro's routing model.
+Astro should own the page/router layer. AstroPress should extend Astro with WordPress-aware conventions rather than replacing Astro's routing model.
 
-ViteWP should use Astro for:
+AstroPress should use Astro for:
 
 - file-based routes,
 - dynamic routes,
@@ -88,7 +88,7 @@ ViteWP should use Astro for:
 - image/media workflows where appropriate,
 - and deployment adapters.
 
-ViteWP should add the WordPress layer:
+AstroPress should add the WordPress layer:
 
 - route metadata from WordPress,
 - preview handling,
@@ -114,11 +114,11 @@ Developers should be able to use:
 - CSS modules, PostCSS, Tailwind, or plain CSS,
 - and server-only TypeScript utilities.
 
-The routing and rendering foundation should remain Astro so ViteWP can provide one coherent WordPress development model.
+The routing and rendering foundation should remain Astro so AstroPress can provide one coherent WordPress development model.
 
 ### WordPress as a first-class development dependency
 
-ViteWP should treat WordPress as part of the app, not as an external afterthought.
+AstroPress should treat WordPress as part of the app, not as an external afterthought.
 
 The tool should support:
 
@@ -131,17 +131,17 @@ The tool should support:
 - surfacing WordPress health checks in the JS terminal,
 - and creating a predictable boundary between WordPress admin/editor and the Astro frontend.
 
-The preferred local path should aim for a single runtime experience where possible: one project, one command, and one coherent process boundary for WordPress + Astro development instead of requiring separate application containers or disconnected services. ViteWP should expose one public local origin where WordPress admin, REST routes, media, previews, and Astro frontend routes all work together. Internal WordPress/PHP and Astro listeners may still exist on loopback ports, but they should be implementation details with auto-selected ports by default, not URLs developers are expected to use. The database should be bring-your-own by default, matching WordPress expectations: ViteWP configures and validates database settings, but does not need to own or start MySQL/MariaDB.
+The preferred local path should aim for a single runtime experience where possible: one project, one command, and one coherent process boundary for WordPress + Astro development instead of requiring separate application containers or disconnected services. AstroPress should expose one public local origin where WordPress admin, REST routes, media, previews, and Astro frontend routes all work together. Internal WordPress/PHP and Astro listeners may still exist on loopback ports, but they should be implementation details with auto-selected ports by default, not URLs developers are expected to use. The database should be bring-your-own by default, matching WordPress expectations: AstroPress configures and validates database settings, but does not need to own or start MySQL/MariaDB.
 
-If a team chooses to run ViteWP inside Docker or another containerized environment, it should be painless, but Docker should not be the assumed architecture or the center of the plan.
+If a team chooses to run AstroPress inside Docker or another containerized environment, it should be painless, but Docker should not be the assumed architecture or the center of the plan.
 
-ViteWP can later support “bring your own WordPress” for teams that already use Local, DDEV, Lando, wp-env, Docker, a custom PHP runtime, or a remote staging CMS, but that is secondary to the main innovation: the ViteWP project itself is the local WordPress instance.
+AstroPress can later support “bring your own WordPress” for teams that already use Local, DDEV, Lando, wp-env, Docker, a custom PHP runtime, or a remote staging CMS, but that is secondary to the main innovation: the AstroPress project itself is the local WordPress instance.
 
 ### Composer first-class support
 
-Composer should be treated as a normal part of the ViteWP project, not as an escape hatch. WordPress core should be installed and versioned through Composer by default so teams can pin, upgrade, and audit the exact WordPress version used by a project.
+Composer should be treated as a normal part of the AstroPress project, not as an escape hatch. WordPress core should be installed and versioned through Composer by default so teams can pin, upgrade, and audit the exact WordPress version used by a project.
 
-ViteWP should support:
+AstroPress should support:
 
 - detecting `composer.json`,
 - requiring WordPress core to be declared in `composer.json` by default,
@@ -152,14 +152,14 @@ ViteWP should support:
 - supporting WordPress plugins installed through Composer,
 - supporting mu-plugins and project PHP libraries,
 - validating PHP autoload paths,
-- exposing Composer/plugin health in `vite-wp doctor`,
-- and making Composer-based projects work with the same `vite-wp dev` and `vite-wp build` flows.
+- exposing Composer/plugin health in `astropress doctor`,
+- and making Composer-based projects work with the same `astropress dev` and `astropress build` flows.
 
-The tool should not replace Composer. It should coordinate with Composer and make PHP dependency state visible from the ViteWP developer experience. The repository should commit `composer.json` and `composer.lock`, not the downloaded WordPress core files.
+The tool should not replace Composer. It should coordinate with Composer and make PHP dependency state visible from the AstroPress developer experience. The repository should commit `composer.json` and `composer.lock`, not the downloaded WordPress core files.
 
 ### First-class plugin and block bundling
 
-ViteWP should support WordPress-side JavaScript as a native part of the project.
+AstroPress should support WordPress-side JavaScript as a native part of the project.
 
 It should be possible to define WordPress plugin, block, editor, and frontend entries in one config and have the system produce valid WordPress assets.
 
@@ -182,7 +182,7 @@ The developer should be able to write TypeScript for WordPress assets without ma
 
 Types should be a central feature, not an afterthought.
 
-ViteWP should generate and maintain types for:
+AstroPress should generate and maintain types for:
 
 - WordPress REST API responses,
 - WPGraphQL schema when available,
@@ -196,12 +196,12 @@ ViteWP should generate and maintain types for:
 - plugin configuration,
 - Composer/plugin capability metadata where useful,
 - environment variables,
-- and ViteWP project configuration.
+- and AstroPress project configuration.
 
 Generated types should be deterministic, checked into the project when useful, and refreshable with one command:
 
 ```bash
-vite-wp types
+astropress types
 ```
 
 The system should support both REST-first and GraphQL-first projects. WPGraphQL can be a preferred rich-schema path, but REST must remain supported because it is native to WordPress.
@@ -210,7 +210,7 @@ The system should support both REST-first and GraphQL-first projects. WPGraphQL 
 
 The end experience must respect the WordPress editor.
 
-ViteWP should support:
+AstroPress should support:
 
 - previewing drafts and revisions in Astro routes,
 - authenticated preview links,
@@ -237,7 +237,7 @@ The tool should not assume one hosting provider. It should support static, serve
 
 ## Template System Vision
 
-ViteWP should provide a predefined folder structure that feels familiar to WordPress and Twig developers while staying native to Astro.
+AstroPress should provide a predefined folder structure that feels familiar to WordPress and Twig developers while staying native to Astro.
 
 The goal is not to recreate PHP template loading. The goal is to map WordPress content concepts to predictable Astro files.
 
@@ -312,7 +312,7 @@ src/
 
 ### Template hierarchy
 
-ViteWP should resolve templates in a predictable order inspired by the WordPress template hierarchy.
+AstroPress should resolve templates in a predictable order inspired by the WordPress template hierarchy.
 
 Examples:
 
@@ -378,7 +378,7 @@ Astro should provide:
 
 ### Progressive adoption
 
-ViteWP should work for multiple project shapes:
+AstroPress should work for multiple project shapes:
 
 1. A new greenfield Astro + WordPress site.
 2. An Astro frontend connecting to an existing WordPress instance.
@@ -393,15 +393,15 @@ The first implementation should focus on the greenfield Astro path, but the arch
 The project should have one main config file:
 
 ```ts
-// vitewp.config.ts
-import { defineConfig } from "vite-wp";
+// astropress.config.ts
+import { defineConfig } from "astropress";
 
 export default defineConfig({
   database: {
     driver: "mysql",
     host: process.env.WP_DB_HOST ?? "127.0.0.1",
     port: Number(process.env.WP_DB_PORT ?? 3306),
-    name: process.env.WP_DB_NAME ?? "vitewp",
+    name: process.env.WP_DB_NAME ?? "astropress",
     user: process.env.WP_DB_USER ?? "root",
     password: process.env.WP_DB_PASSWORD ?? "",
     tablePrefix: process.env.WP_DB_TABLE_PREFIX ?? "wp_",
@@ -471,20 +471,20 @@ WordPress integration should not force the frontend into outdated patterns.
 
 ## Major Subsystems
 
-### `vitewp` CLI
+### `astropress` CLI
 
 The CLI is the primary interface.
 
 Planned commands:
 
-- `vite-wp dev` — run the full Astro + WordPress development environment.
-- `vite-wp build` — build Astro and WordPress-side assets.
-- `vite-wp preview` — preview the production build.
-- `vite-wp types` — generate TypeScript types from WordPress sources.
-- `vite-wp composer` — run or proxy selected Composer workflows where useful.
-- `vite-wp wp` — proxy selected WP-CLI operations or provide a consistent wrapper.
-- `vite-wp doctor` — validate local setup, WordPress connectivity, Composer, plugins, schemas, routes, templates, and config.
-- `vite-wp init` — add ViteWP to an existing Astro project.
+- `astropress dev` — run the full Astro + WordPress development environment.
+- `astropress build` — build Astro and WordPress-side assets.
+- `astropress preview` — preview the production build.
+- `astropress types` — generate TypeScript types from WordPress sources.
+- `astropress composer` — run or proxy selected Composer workflows where useful.
+- `astropress wp` — proxy selected WP-CLI operations or provide a consistent wrapper.
+- `astropress doctor` — validate local setup, WordPress connectivity, Composer, plugins, schemas, routes, templates, and config.
+- `astropress init` — add AstroPress to an existing Astro project.
 
 ### WordPress bridge
 
@@ -504,11 +504,11 @@ Responsibilities:
 
 ### Astro integration
 
-ViteWP should ship an Astro integration that wires the project together.
+AstroPress should ship an Astro integration that wires the project together.
 
 Responsibilities:
 
-- install ViteWP runtime helpers,
+- install AstroPress runtime helpers,
 - expose virtual modules when useful,
 - connect template resolution to Astro routes,
 - add dev middleware/proxy behavior,
@@ -572,7 +572,7 @@ Responsibilities:
 
 The preferred development model should avoid making developers run separate application containers just to work on a site.
 
-ViteWP should aim for:
+AstroPress should aim for:
 
 - one project command,
 - one coherent runtime story,
@@ -591,7 +591,7 @@ An eventual generated project could look like:
 ```txt
 my-site/
   astro.config.mjs
-  vitewp.config.ts
+  astropress.config.ts
   composer.json
   package.json
   src/
@@ -622,7 +622,7 @@ my-site/
     wp-plugin/
       plugin.php
       includes/
-  .vitewp/
+  .astropress/
     types/
     cache/
   wordpress/
@@ -638,17 +638,17 @@ This structure is only a direction, not a final contract. The important point is
 
 ## Codebase Integration and Updates
 
-ViteWP should feel like a real library inside the project, not a one-time scaffold that users are afraid to update.
+AstroPress should feel like a real library inside the project, not a one-time scaffold that users are afraid to update.
 
 The preferred distribution model should separate stable package-owned behavior from user-owned project files:
 
 - npm package: CLI, Astro integration, template resolver, type generation, dev proxy, and block/plugin bundler.
 - Composer packages: pinned WordPress core, PHP bridge/mu-plugin, and optional WordPress plugins.
-- project files: `vitewp.config.ts`, `astro.config.mjs`, `composer.json`, templates, components, blocks, and project-specific PHP.
+- project files: `astropress.config.ts`, `astro.config.mjs`, `composer.json`, templates, components, blocks, and project-specific PHP.
 
-Generated projects can include a meaningful folder structure and starter files, but long-lived behavior should live in versioned npm/Composer packages wherever possible. This lets ViteWP ship fixes and new capabilities without overwriting a user's templates.
+Generated projects can include a meaningful folder structure and starter files, but long-lived behavior should live in versioned npm/Composer packages wherever possible. This lets AstroPress ship fixes and new capabilities without overwriting a user's templates.
 
-A future `vite-wp upgrade` command should:
+A future `astropress upgrade` command should:
 
 - report available npm package updates,
 - report available Composer package updates,
@@ -657,29 +657,29 @@ A future `vite-wp upgrade` command should:
 - never overwrite user templates without a visible diff,
 - and keep WordPress core upgrades explicit through `composer.json` and `composer.lock`.
 
-This creates a clean boundary: users own their site; ViteWP owns the reusable development system.
+This creates a clean boundary: users own their site; AstroPress owns the reusable development system.
 
 ## Roadmap
 
 ### Phase 1 — Astro + local WordPress runtime prototype
 
-Focus: prove the groundbreaking loop: the ViteWP project is the local WordPress instance and Astro renders the frontend.
+Focus: prove the groundbreaking loop: the AstroPress project is the local WordPress instance and Astro renders the frontend.
 
 - Create the CLI skeleton.
-- Define `vitewp.config.ts`.
+- Define `astropress.config.ts`.
 - Add the Astro integration.
 - Add a default `composer.json` that installs a pinned WordPress core version.
 - Install WordPress core into a generated docroot that is ignored by git.
-- Start a local PHP/WordPress runtime from `vite-wp dev`.
-- Start Astro from `vite-wp dev`.
+- Start a local PHP/WordPress runtime from `astropress dev`.
+- Start Astro from `astropress dev`.
 - Expose one unified local origin for WordPress admin, REST, media, previews, and Astro-rendered frontend pages.
-- Own the dev proxy in ViteWP rather than depending solely on Vite's proxy config, because the proxy is the runtime boundary between WordPress and Astro.
+- Own the dev proxy in AstroPress rather than depending solely on Vite's proxy config, because the proxy is the runtime boundary between WordPress and Astro.
 - Add the catch-all WordPress route.
 - Add the template hierarchy resolver.
 - Proxy REST API and media internally.
 - Generate basic REST-derived types.
 - Provide typed content fetch helpers.
-- Add `vite-wp doctor`.
+- Add `astropress doctor`.
 - Document local setup assumptions.
 
 ### Phase 2 — Composer and local runtime
@@ -695,7 +695,7 @@ Focus: make PHP/WordPress dependencies feel native and make the project itself r
 - Keep MySQL/MariaDB bring-your-own by default.
 - Consider SQLite as an optional future local convenience, not the default WordPress-compatible path.
 - Support Composer-installed plugins and mu-plugins.
-- Add Composer status to `vite-wp doctor`.
+- Add Composer status to `astropress doctor`.
 - Define the preferred single-runtime local development path.
 - Add WordPress health checks.
 - Add plugin installation/activation checks.
@@ -716,7 +716,7 @@ Focus: WordPress-side modern bundling.
 
 ### Phase 4 — Rich types
 
-Focus: make TypeScript a primary reason to use ViteWP.
+Focus: make TypeScript a primary reason to use AstroPress.
 
 - Add WPGraphQL schema support.
 - Add custom post type and taxonomy type generation.
@@ -755,18 +755,18 @@ Focus: deployment confidence.
 These decisions should be resolved during technical planning:
 
 1. What is the preferred single-runtime local development path for WordPress + Astro?
-2. How should ViteWP generate or manage `wp-config.php` from bring-your-own database settings?
+2. How should AstroPress generate or manage `wp-config.php` from bring-your-own database settings?
 3. Should SQLite be offered as an optional convenience without making it the default?
-4. How should ViteWP install WordPress core through Composer while keeping the generated docroot out of git?
-5. How should ViteWP locate and manage a local PHP/WordPress runtime without centering the plan on Docker?
+4. How should AstroPress install WordPress core through Composer while keeping the generated docroot out of git?
+5. How should AstroPress locate and manage a local PHP/WordPress runtime without centering the plan on Docker?
 6. How should Composer-installed plugins and project PHP libraries be discovered and validated?
 7. Should WPGraphQL be optional, recommended, or part of the default template?
-8. How much PHP should ViteWP generate versus document?
+8. How much PHP should AstroPress generate versus document?
 9. Should block/plugin bundling live in the core package or a dedicated package?
 10. What is the minimal stable Astro integration API?
 11. How should authenticated previews work across static, SSR, and hybrid Astro frontends?
 12. How should generated types be cached, committed, and invalidated?
-13. How should ViteWP support existing WordPress projects without forcing a repo restructure?
+13. How should AstroPress support existing WordPress projects without forcing a repo restructure?
 14. What deployment artifact shape best supports real WordPress hosting constraints?
 15. How should the project test against real WordPress versions, PHP versions, Composer setups, database setups, and plugin combinations?
 
@@ -790,7 +790,7 @@ These can become future capabilities, but the first milestone should remain narr
 
 ## Success Criteria
 
-ViteWP is successful when:
+AstroPress is successful when:
 
 - a developer can start a new Astro + WordPress project in minutes,
 - local development requires one primary command,

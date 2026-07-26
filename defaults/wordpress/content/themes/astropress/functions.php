@@ -1,6 +1,6 @@
 <?php
 /**
- * ViteWP placeholder theme functions.
+ * AstroPress placeholder theme functions.
  */
 
 add_action('after_setup_theme', function () {

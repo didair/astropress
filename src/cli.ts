@@ -43,14 +43,14 @@ switch (command) {
 }
 
 function printHelp() {
-  console.log(`vite-wp\n\nUsage:\n  vite-wp init      Copy starter project files into the current directory
-  vite-wp dev       Start the local WordPress + Astro development runtime
-  vite-wp doctor    Check the current project setup
-  vite-wp types     Generate TypeScript types from WordPress metadata
-  vite-wp composer  Run Composer in the ViteWP project
-  vite-wp wp        Run WP-CLI for the local WordPress runtime
-  vite-wp smoke     Verify the running ViteWP dev runtime
+  console.log(`astropress\n\nUsage:\n  astropress init      Copy starter project files into the current directory
+  astropress dev       Start the local WordPress + Astro development runtime
+  astropress doctor    Check the current project setup
+  astropress types     Generate TypeScript types from WordPress metadata
+  astropress composer  Run Composer in the AstroPress project
+  astropress wp        Run WP-CLI for the local WordPress runtime
+  astropress smoke     Verify the running AstroPress dev runtime
 
 Options:
-  vite-wp init --no-install   Create files without running package install\n`);
+  astropress init --no-install   Create files without running package install\n`);
 }

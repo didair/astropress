@@ -1,10 +1,10 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { loadViteWpConfig, type LoadedViteWpConfig } from '../config.js';
+import { loadAstroPressConfig, type LoadedAstroPressConfig } from '../config.js';
 
 export async function runWpCommand(args = process.argv.slice(3)) {
-  const config = await loadViteWpConfig();
+  const config = await loadAstroPressConfig();
   const command = wpBinary(config);
 
   if (!command) {
@@ -23,7 +23,7 @@ export async function runWpCommand(args = process.argv.slice(3)) {
   process.exitCode = code;
 }
 
-function wpBinary(config: LoadedViteWpConfig) {
+function wpBinary(config: LoadedAstroPressConfig) {
   const local = join(config.root, 'vendor/bin/wp');
 
   if (existsSync(local)) {
@@ -33,7 +33,7 @@ function wpBinary(config: LoadedViteWpConfig) {
   return process.platform === 'win32' ? 'wp.cmd' : 'wp';
 }
 
-function spawnWp(config: LoadedViteWpConfig, command: string, args: string[]) {
+function spawnWp(config: LoadedAstroPressConfig, command: string, args: string[]) {
   return new Promise<number>((resolve) => {
     const child = spawn(command, args, {
       cwd: config.root,

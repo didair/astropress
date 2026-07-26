@@ -1,10 +1,10 @@
 {
-  "name": "vite-wp",
+  "name": "astropress",
   "private": false,
   "version": "0.1.40",
   "type": "module",
   "bin": {
-    "vite-wp": "dist/cli.js"
+    "astropress": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -54,12 +54,12 @@
   "author": "Didair",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/didair/vitewp.git"
+    "url": "git+https://github.com/didair/astropress.git"
   },
   "bugs": {
-    "url": "https://github.com/didair/vitewp/issues"
+    "url": "https://github.com/didair/astropress/issues"
   },
-  "homepage": "https://github.com/didair/vitewp#readme",
+  "homepage": "https://github.com/didair/astropress#readme",
   "keywords": [
     "wordpress",
     "astro",

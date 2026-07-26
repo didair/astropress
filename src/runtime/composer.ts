@@ -1,9 +1,9 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import type { LoadedViteWpConfig } from '../config.js';
+import type { LoadedAstroPressConfig } from '../config.js';
 
-export async function ensureComposerInstall(config: LoadedViteWpConfig) {
+export async function ensureComposerInstall(config: LoadedAstroPressConfig) {
   if (!config.composer.install) {
     console.log('Composer install disabled by config.');
     return;
@@ -15,7 +15,7 @@ export async function ensureComposerInstall(config: LoadedViteWpConfig) {
   const wpSettings = join(config.root, config.wordpress.docroot, 'wp-settings.php');
 
   if (!existsSync(manifest)) {
-    throw new Error('composer.json is missing. Run `vite-wp init` or add a Composer manifest before starting dev.');
+    throw new Error('composer.json is missing. Run `astropress init` or add a Composer manifest before starting dev.');
   }
 
   if (existsSync(lockfile) && existsSync(vendor) && existsSync(wpSettings)) {
