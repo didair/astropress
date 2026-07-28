@@ -278,7 +278,10 @@ final class AstroPress_Bridge_Content
 
         foreach (get_taxonomies(['public' => true], 'objects') as $taxonomy) {
             $base = AstroPress_Bridge_Content::taxonomyBase($taxonomy);
-            $matches_base = count($segments) >= 2 && $segments[0] === $base;
+            $base_segments = $base !== '' ? explode('/', $base) : [];
+            $matches_base = ! empty($base_segments)
+                && count($segments) > count($base_segments)
+                && array_slice($segments, 0, count($base_segments)) === $base_segments;
             $matches_direct = count($segments) === 1;
 
             if (! $matches_base && ! $matches_direct) {
