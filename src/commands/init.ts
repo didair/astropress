@@ -225,6 +225,7 @@ function updatePackageJson(root: string, packageRoot: string) {
   packageJson.scripts.types ??= 'astropress types';
   packageJson.scripts.composer ??= 'astropress composer';
   packageJson.scripts.wp ??= 'astropress wp';
+  packageJson.scripts.upgrade ??= 'astropress upgrade';
   packageJson.scripts.check ??= 'astro check';
   packageJson.dependencies['astropress'] ??= `^${astroPress.version}`;
   packageJson.dependencies.astro ??= '^7.0.6';

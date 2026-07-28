@@ -38,6 +38,7 @@ npm run dev      # Start the local AstroPress runtime
 npm run doctor   # Check PHP, Composer, WordPress, config, and environment
 npm run types    # Generate WordPress-derived TypeScript types
 npm run check    # Run Astro type checking
+npm run upgrade  # Upgrade AstroPress-managed project files
 npx astropress composer install  # Run Composer in the project
 npx astropress wp plugin list    # Run WP-CLI when installed
 ```
@@ -47,6 +48,16 @@ For internal runtime diagnostics:
 ```bash
 npm run dev -- --verbose
 ```
+
+## Upgrading
+
+Upgrade an AstroPress project from inside the project with:
+
+```bash
+npx astropress@latest upgrade
+```
+
+The command updates the local `astropress` dependency, refreshes AstroPress-owned WordPress runtime files such as the bridge mu-plugin and placeholder theme, and overwrites starter support files with timestamped `.old` backups. Use `--dry-run` to preview changes first and `--force-config` if you also want to overwrite `astropress.config.ts`.
 
 ## Folder structure
 
