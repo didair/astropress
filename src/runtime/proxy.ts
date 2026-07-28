@@ -145,17 +145,33 @@ function rewriteTargetPath(path: string, target: URL, publicUrl: URL) {
   return path;
 }
 
-function proxyHttpRequest(request: IncomingMessage, response: ServerResponse, target: URL, publicUrl: URL) {
+function proxyHttpRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  target: URL,
+  publicUrl: URL,
+  options: { retriedViteStaleModule?: boolean; path?: string } = {},
+) {
+  const requestPath = options.path ?? request.url ?? '/';
   const targetRequest = http.request(
     {
       protocol: target.protocol,
       hostname: target.hostname,
       port: target.port,
       method: request.method,
-      path: rewriteTargetPath(request.url ?? '/', target, publicUrl),
+      path: rewriteTargetPath(requestPath, target, publicUrl),
       headers: rewriteRequestHeaders(request, publicUrl),
     },
     (targetResponse) => {
+      if (shouldRetryViteStaleModule(request, requestPath, targetResponse, target, publicUrl, options)) {
+        targetResponse.resume();
+        proxyHttpRequest(request, response, target, publicUrl, {
+          retriedViteStaleModule: true,
+          path: cacheBustedPath(requestPath),
+        });
+        return;
+      }
+
       response.writeHead(
         targetResponse.statusCode ?? 502,
         targetResponse.statusMessage,
@@ -170,7 +186,36 @@ function proxyHttpRequest(request: IncomingMessage, response: ServerResponse, ta
     response.end(`AstroPress proxy could not reach ${target.origin}: ${error.message}\n`);
   });
 
+  if (options.retriedViteStaleModule) {
+    targetRequest.end();
+    return;
+  }
+
   request.pipe(targetRequest);
+}
+
+function shouldRetryViteStaleModule(
+  request: IncomingMessage,
+  path: string,
+  targetResponse: IncomingMessage,
+  target: URL,
+  publicUrl: URL,
+  options: { retriedViteStaleModule?: boolean },
+) {
+  if (options.retriedViteStaleModule) return false;
+  if (target.origin === publicUrl.origin) return false;
+  if (request.method !== 'GET' && request.method !== 'HEAD') return false;
+  if (targetResponse.statusCode !== 504) return false;
+  if (!String(targetResponse.statusMessage ?? '').includes('Outdated Optimize Dep')) return false;
+
+  const pathname = new URL(path, publicUrl).pathname;
+  return pathname.startsWith('/@id/') || pathname.startsWith('/node_modules/') || pathname.startsWith('/@vite/');
+}
+
+function cacheBustedPath(path: string) {
+  const url = new URL(path, 'http://astropress.local');
+  url.searchParams.set('astropress_vite_retry', String(Date.now()));
+  return `${url.pathname}${url.search}`;
 }
 
 function proxyUpgrade(request: IncomingMessage, socket: Duplex, head: Buffer, target: URL, publicUrl: URL) {
