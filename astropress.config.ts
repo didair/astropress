@@ -20,7 +20,7 @@ export default defineConfig({
       footer: 'Footer menu',
     },
     routes: {
-      wordpress: ['/my-account', '/cart', '/checkout'],
+      wordpress: [],
     },
   },
   composer: {

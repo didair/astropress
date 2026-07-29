@@ -173,7 +173,7 @@ export async function loadAstroPressConfig(root = process.cwd()): Promise<Loaded
       requiredPlugins: userConfig.wordpress?.requiredPlugins ?? [],
       pluginPresets: userConfig.wordpress?.pluginPresets ?? [],
       routes: {
-        wordpress: userConfig.wordpress?.routes?.wordpress ?? ['/my-account', '/cart', '/checkout'],
+        wordpress: userConfig.wordpress?.routes?.wordpress ?? [],
       },
       hooks: {
         cache: normalizeHookCache(userConfig.wordpress?.hooks?.cache),
