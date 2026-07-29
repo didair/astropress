@@ -86,6 +86,8 @@ export type {
   HookRenderResult,
   Hooks,
   AuthContextOptions,
+  RenderedWordPressPage,
+  RenderWordPressPageOptions,
   WpAuthMessageResult,
   LayoutTemplateProps,
   LiveCacheHint,

@@ -17,6 +17,10 @@ final class AstroPress_Bridge_Internal
             self::handleInternalAuth();
         }
 
+        if (isset($_GET['astropress_internal_render_post'])) {
+            self::handleInternalRenderPost();
+        }
+
         if (! isset($_GET['astropress_internal_hook'])) {
             return;
         }
@@ -78,6 +82,60 @@ final class AstroPress_Bridge_Internal
             'hook' => $hook,
             'value' => $filtered,
             'rendered' => is_scalar($filtered) ? (string) $filtered : wp_json_encode($filtered),
+        ]);
+    }
+
+    public static function handleInternalRenderPost(): void
+    {
+
+        AstroPress_Bridge_Internal::requireInternalRequest();
+
+        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+            AstroPress_Bridge_Internal::jsonError(405, 'method_not_allowed', 'Post rendering must use POST.');
+        }
+
+        $payload = json_decode((string) file_get_contents('php://input'), true);
+
+        if (! is_array($payload)) {
+            AstroPress_Bridge_Internal::jsonError(400, 'invalid_json', 'Invalid JSON payload.');
+        }
+
+        $post = AstroPress_Bridge_Internal::resolveRenderPost($payload);
+
+        if (! $post) {
+            AstroPress_Bridge_Internal::jsonError(404, 'post_not_found', 'The WordPress post could not be resolved.');
+        }
+
+        AstroPress_Bridge_Internal::setupPostContext($post);
+
+        $content_filter = sanitize_key((string) ($payload['contentFilter'] ?? 'the_content'));
+        if ($content_filter === '') {
+            $content_filter = 'the_content';
+        }
+
+        $include = is_array($payload['include'] ?? null) ? array_values($payload['include']) : ['wp_head', 'wp_body_open', 'wp_footer'];
+
+        $content = (string) apply_filters($content_filter, $post->post_content);
+        $fragments = [];
+
+        foreach ($include as $part) {
+            $part = sanitize_key((string) $part);
+
+            if ($part === '') {
+                continue;
+            }
+
+            $fragments[$part] = AstroPress_Bridge_Internal::renderPagePart($part);
+        }
+
+        AstroPress_Bridge_Internal::json([
+            'ok' => true,
+            'postId' => $post->ID,
+            'postType' => $post->post_type,
+            'contentFilter' => $content_filter,
+            'include' => array_keys($fragments),
+            'content' => $content,
+            'fragments' => $fragments,
         ]);
     }
 
@@ -894,14 +952,88 @@ final class AstroPress_Bridge_Internal
             return;
         }
 
-        global $post;
+        AstroPress_Bridge_Internal::setupPostContext($context_post);
+    }
+
+    public static function resolveRenderPost(array $payload): ?WP_Post
+    {
+
+        $post_id = (int) ($payload['postId'] ?? 0);
+
+        if ($post_id <= 0) {
+            $context = is_array($payload['context'] ?? null) ? $payload['context'] : [];
+            $route = is_array($context['route'] ?? null) ? $context['route'] : [];
+            $item = is_array($route['item'] ?? null) ? $route['item'] : [];
+            $post_id = (int) ($item['id'] ?? 0);
+        }
+
+        if ($post_id <= 0) {
+            return null;
+        }
+
+        $post = get_post($post_id);
+        return $post instanceof WP_Post ? $post : null;
+    }
+
+    public static function setupPostContext(WP_Post $context_post): void
+    {
+
+        global $post, $wp_query;
+
         $post = $context_post;
         $GLOBALS['post'] = $context_post;
+
+        if (! $wp_query instanceof WP_Query) {
+            $wp_query = new WP_Query();
+            $GLOBALS['wp_query'] = $wp_query;
+        }
+
+        $wp_query->post = $context_post;
+        $wp_query->posts = [$context_post];
+        $wp_query->queried_object = $context_post;
+        $wp_query->queried_object_id = (int) $context_post->ID;
+        $wp_query->post_count = 1;
+        $wp_query->found_posts = 1;
+        $wp_query->max_num_pages = 1;
+        $wp_query->current_post = -1;
+        $wp_query->in_the_loop = false;
+        $wp_query->is_singular = true;
+        $wp_query->is_page = $context_post->post_type === 'page';
+        $wp_query->is_single = $context_post->post_type !== 'page';
+        $wp_query->is_home = false;
+        $wp_query->is_archive = false;
+        $wp_query->is_search = false;
+        $wp_query->is_404 = false;
+
+        $GLOBALS['wp_the_query'] = $wp_query;
+
         setup_postdata($context_post);
 
         if (function_exists('wc_get_product') && $context_post->post_type === 'product') {
             $GLOBALS['product'] = wc_get_product($context_post);
         }
+    }
+
+    public static function renderPagePart(string $part): string
+    {
+
+        ob_start();
+
+        if ($part === 'wp_head') {
+            wp_head();
+        } elseif ($part === 'wp_body_open') {
+            if (function_exists('wp_body_open')) {
+                wp_body_open();
+            } else {
+                do_action('wp_body_open');
+            }
+        } elseif ($part === 'wp_footer') {
+            wp_footer();
+        } else {
+            do_action($part);
+        }
+
+        return (string) ob_get_clean();
     }
 
     public static function json(mixed $payload): void

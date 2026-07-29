@@ -4,6 +4,7 @@ export * from './blocks.js';
 export * from './context.js';
 export * from './hooks.js';
 export * from './menus.js';
+export * from './render.js';
 export * from './schemas.js';
 export * from './templates.js';
 export { wpMenuLoader, wpPostTypeLoader, wpRouteLoader } from '../content.js';

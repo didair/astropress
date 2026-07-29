@@ -44,6 +44,10 @@ export async function runSmoke() {
       run: () => expectHttp(`${baseUrl}/index.php?astropress_internal_hook=1`, [403], 'application/json'),
     },
     {
+      label: 'Internal render endpoint is not public',
+      run: () => expectHttp(`${baseUrl}/index.php?astropress_internal_render_post=1`, [403], 'application/json'),
+    },
+    {
       label: 'Vite HMR websocket',
       run: () => expectWebSocket(baseUrl),
     },
