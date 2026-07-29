@@ -18,7 +18,9 @@ final class AstroPress_Bridge_Internal
         }
 
         if (isset($_GET['astropress_internal_render_post'])) {
-            self::handleInternalRenderPost();
+            self::applyWooCartTokenToRenderRequest();
+            add_action('wp_loaded', [self::class, 'handleInternalRenderPost'], 0);
+            return;
         }
 
         if (! isset($_GET['astropress_internal_hook'])) {
@@ -107,6 +109,7 @@ final class AstroPress_Bridge_Internal
         }
 
         AstroPress_Bridge_Internal::setupPostContext($post);
+        AstroPress_Bridge_Internal::ensureFrontendRuntimeIncludes();
 
         $content_filter = sanitize_key((string) ($payload['contentFilter'] ?? 'the_content'));
         if ($content_filter === '') {
@@ -1011,6 +1014,38 @@ final class AstroPress_Bridge_Internal
 
         if (function_exists('wc_get_product') && $context_post->post_type === 'product') {
             $GLOBALS['product'] = wc_get_product($context_post);
+        }
+    }
+
+    public static function applyWooCartTokenToRenderRequest(): void
+    {
+
+        $cart_token = (string) ($_SERVER['HTTP_CART_TOKEN'] ?? '');
+
+        if ($cart_token === '' && isset($_COOKIE['astropress_woocommerce_cart_token'])) {
+            $cart_token = (string) $_COOKIE['astropress_woocommerce_cart_token'];
+        }
+
+        $cart_token = sanitize_text_field(wp_unslash($cart_token));
+
+        if ($cart_token === '') {
+            return;
+        }
+
+        if (empty($_GET['session'])) {
+            $_GET['session'] = $cart_token;
+        }
+
+        if (empty($_REQUEST['session'])) {
+            $_REQUEST['session'] = $cart_token;
+        }
+    }
+
+    public static function ensureFrontendRuntimeIncludes(): void
+    {
+
+        if (function_exists('WC') && WC()) {
+            WC()->frontend_includes();
         }
     }
 

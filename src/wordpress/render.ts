@@ -6,6 +6,7 @@ export interface RenderWordPressPageOptions {
   context?: TemplateContext;
   contentFilter?: string;
   include?: string[];
+  cartToken?: string;
 }
 
 export interface RenderedWordPressPage {
@@ -32,12 +33,13 @@ export async function renderWordPressPage(
   const requestContext = getOptionalRequestContext();
   const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?astropress_internal_render_post=1`, {
     method: 'POST',
-    headers: renderRequestHeaders(secret),
+    headers: renderRequestHeaders(secret, options.cartToken),
     body: JSON.stringify({
       postId: options.postId,
       context: options.context,
       contentFilter: options.contentFilter ?? 'the_content',
       include: options.include ?? ['wp_head', 'wp_body_open', 'wp_footer'],
+      cartToken: options.cartToken,
     }),
   });
 
@@ -68,7 +70,7 @@ function isTemplateContext(input: TemplateContext | RenderWordPressPageOptions):
   return Boolean(input && typeof input === 'object' && 'kind' in input && 'route' in input);
 }
 
-function renderRequestHeaders(secret: string) {
+function renderRequestHeaders(secret: string, cartTokenOverride?: string) {
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     'x-astropress-internal-secret': secret,
@@ -77,6 +79,12 @@ function renderRequestHeaders(secret: string) {
 
   if (context?.cookie) {
     headers.cookie = context.cookie;
+  }
+
+  const cartToken = cartTokenOverride ?? context?.wooCartToken ?? readCookie(context?.cookie ?? '', 'astropress_woocommerce_cart_token');
+
+  if (cartToken) {
+    headers['cart-token'] = cartToken;
   }
 
   const publicUrl = process.env.ASTROPRESS_PUBLIC_URL;
@@ -96,4 +104,20 @@ function renderRequestHeaders(secret: string) {
   }
 
   return headers;
+}
+
+function readCookie(header: string, name: string): string | undefined {
+  for (const cookie of header.split(';')) {
+    const [cookieName, ...value] = cookie.trim().split('=');
+
+    if (cookieName !== name) continue;
+
+    try {
+      return decodeURIComponent(value.join('='));
+    } catch {
+      return value.join('=');
+    }
+  }
+
+  return undefined;
 }
