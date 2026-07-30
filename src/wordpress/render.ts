@@ -7,6 +7,7 @@ export interface RenderWordPressPageOptions {
   contentFilter?: string;
   include?: string[];
   cartToken?: string;
+  cache?: boolean;
 }
 
 export interface RenderedWordPressPage {
@@ -31,17 +32,25 @@ export async function renderWordPressPage(
   }
 
   const requestContext = getOptionalRequestContext();
-  const response = await fetch(`${phpUrl.replace(/\/$/, '')}/index.php?astropress_internal_render_post=1`, {
+  const shouldCache = options.cache !== false;
+  const response = await fetch(renderUrl(phpUrl, shouldCache), {
     method: 'POST',
-    headers: renderRequestHeaders(secret, options.cartToken),
+    cache: shouldCache ? 'default' : 'no-store',
+    headers: renderRequestHeaders(secret, options.cartToken, shouldCache),
     body: JSON.stringify({
       postId: options.postId,
       context: options.context,
       contentFilter: options.contentFilter ?? 'the_content',
       include: options.include ?? ['wp_head', 'wp_body_open', 'wp_footer'],
       cartToken: options.cartToken,
+      cache: shouldCache,
     }),
   });
+
+  if (!shouldCache && requestContext?.responseHeaders) {
+    requestContext.responseHeaders.set('cache-control', 'private, no-store, max-age=0');
+    requestContext.responseHeaders.set('pragma', 'no-cache');
+  }
 
   if (requestContext) {
     forwardResponseCookies(response, requestContext);
@@ -53,6 +62,18 @@ export async function renderWordPressPage(
   }
 
   return response.json() as Promise<RenderedWordPressPage>;
+}
+
+
+function renderUrl(phpUrl: string, shouldCache: boolean) {
+  const url = new URL(`${phpUrl.replace(/\/$/, '')}/index.php`);
+  url.searchParams.set('astropress_internal_render_post', '1');
+
+  if (!shouldCache) {
+    url.searchParams.set('astropress_no_cache', String(Date.now()));
+  }
+
+  return url;
 }
 
 function normalizeRenderOptions(input: TemplateContext | RenderWordPressPageOptions): RenderWordPressPageOptions {
@@ -70,7 +91,7 @@ function isTemplateContext(input: TemplateContext | RenderWordPressPageOptions):
   return Boolean(input && typeof input === 'object' && 'kind' in input && 'route' in input);
 }
 
-function renderRequestHeaders(secret: string, cartTokenOverride?: string) {
+function renderRequestHeaders(secret: string, cartTokenOverride: string | undefined, shouldCache: boolean) {
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     'x-astropress-internal-secret': secret,
@@ -85,6 +106,12 @@ function renderRequestHeaders(secret: string, cartTokenOverride?: string) {
 
   if (cartToken) {
     headers['cart-token'] = cartToken;
+  }
+
+  if (!shouldCache) {
+    headers['cache-control'] = 'no-store';
+    headers.pragma = 'no-cache';
+    headers['x-astropress-no-cache'] = '1';
   }
 
   const publicUrl = process.env.ASTROPRESS_PUBLIC_URL;

@@ -102,6 +102,10 @@ final class AstroPress_Bridge_Internal
             AstroPress_Bridge_Internal::jsonError(400, 'invalid_json', 'Invalid JSON payload.');
         }
 
+        if (($payload['cache'] ?? true) === false || isset($_GET['astropress_no_cache'])) {
+            AstroPress_Bridge_Internal::disableRenderCache();
+        }
+
         $post = AstroPress_Bridge_Internal::resolveRenderPost($payload);
 
         if (! $post) {
@@ -1015,6 +1019,25 @@ final class AstroPress_Bridge_Internal
         if (function_exists('wc_get_product') && $context_post->post_type === 'product') {
             $GLOBALS['product'] = wc_get_product($context_post);
         }
+    }
+
+    public static function disableRenderCache(): void
+    {
+
+        if (! defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+
+        if (! defined('DONOTCDN')) {
+            define('DONOTCDN', true);
+        }
+
+        if (function_exists('nocache_headers')) {
+            nocache_headers();
+        }
+
+        header('Cache-Control: private, no-store, max-age=0', true);
+        header('Pragma: no-cache', true);
     }
 
     public static function applyWooCartTokenToRenderRequest(): void
