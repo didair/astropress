@@ -1,7 +1,7 @@
 {
   "name": "astropress",
   "private": false,
-  "version": "0.1.48",
+  "version": "0.1.49",
   "type": "module",
   "bin": {
     "astropress": "dist/cli.js"
