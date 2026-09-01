@@ -82,5 +82,8 @@
   "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
   }
 }
