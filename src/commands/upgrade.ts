@@ -259,6 +259,8 @@ function updateProjectPackage(root: string, version: string) {
   packageJson.dependencies ??= {};
   packageJson.devDependencies ??= {};
   packageJson.scripts.dev ??= 'astropress dev';
+  packageJson.scripts.build ??= 'astropress build';
+  packageJson.scripts.start ??= 'astropress start';
   packageJson.scripts.doctor ??= 'astropress doctor';
   packageJson.scripts.types ??= 'astropress types';
   packageJson.scripts.composer ??= 'astropress composer';

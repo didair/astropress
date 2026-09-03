@@ -35,6 +35,8 @@ If the database is empty, go to `/wp-admin/` and complete the WordPress installe
 
 ```bash
 npm run dev      # Start the local AstroPress runtime
+npm run build    # Build Astro + WordPress assets for deployment
+npm run start    # Start the built AstroPress runtime
 npm run doctor   # Check PHP, Composer, WordPress, config, and environment
 npm run types    # Generate WordPress-derived TypeScript types
 npm run check    # Run Astro type checking
@@ -58,6 +60,38 @@ npx astropress@latest upgrade
 ```
 
 The command updates the local `astropress` dependency, refreshes AstroPress-owned WordPress runtime files such as the bridge mu-plugin and placeholder theme, and overwrites starter support files with timestamped `.old` backups. Use `--dry-run` to preview changes first and `--force-config` if you also want to overwrite `astropress.config.ts`.
+
+## Production build and start
+
+The first deployable AstroPress runtime mirrors development mode without watchers, HMR, or the dev toolbar. Build optimized Astro and WordPress-side assets with:
+
+```bash
+npm run build
+```
+
+Then start the built runtime:
+
+```bash
+npm run start
+```
+
+`astropress build` validates the project, installs Composer dependencies when needed, refreshes the generated WordPress bridge/theme files, builds block/plugin assets in production mode, runs `astro build`, and writes `.astropress/deploy.json`.
+
+`astropress start` starts the local WordPress/PHP runtime, starts Astro's built preview/server command, and puts the same AstroPress proxy in front of both processes. WordPress internals go to WordPress; public frontend routes go to Astro:
+
+```txt
+/wp-admin/*      -> WordPress
+/wp-login.php    -> WordPress
+/wp-json/*       -> WordPress
+/wp-content/*    -> WordPress files, including uploads
+/wp-includes/*   -> WordPress files
+/*.php           -> WordPress
+/*               -> Astro
+```
+
+For this first production shape, WordPress owns media. AstroPress serves WordPress-origin `/wp-content/uploads` URLs and does not sync uploads to a CDN, rewrite media URLs, or run WordPress media through Astro's image pipeline.
+
+For dynamic WooCommerce/cart/account pages, render with `renderWordPressPage({ cache: false })` and keep those routes uncached at any outer proxy/CDN layer.
 
 ## Folder structure
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+import { runBuild } from './commands/build.js';
 import { runDev } from './commands/dev.js';
 import { runDoctor } from './commands/doctor.js';
 import { runSmoke } from './commands/smoke.js';
+import { runStart } from './commands/start.js';
 import { runTypes } from './commands/types.js';
 import { runInit } from './commands/init.js';
 import { runComposerCommand } from './commands/composer.js';
@@ -11,6 +13,9 @@ import { runUpgrade } from './commands/upgrade.js';
 const command = process.argv[2] ?? 'help';
 
 switch (command) {
+  case 'build':
+    await runBuild();
+    break;
   case 'dev':
     await runDev();
     break;
@@ -35,6 +40,9 @@ switch (command) {
   case 'smoke':
     await runSmoke();
     break;
+  case 'start':
+    await runStart();
+    break;
   case 'help':
   case '--help':
   case '-h':
@@ -47,18 +55,26 @@ switch (command) {
 }
 
 function printHelp() {
-  console.log(`astropress\n\nUsage:\n  astropress init      Copy starter project files into the current directory
+  console.log(`astropress
+
+Usage:
+  astropress build     Build Astro + WordPress assets for deployment
+  astropress start     Start the built AstroPress runtime
+  astropress init      Copy starter project files into the current directory
   astropress upgrade   Update AstroPress package and managed project files
   astropress dev       Start the local WordPress + Astro development runtime
   astropress doctor    Check the current project setup
   astropress types     Generate TypeScript types from WordPress metadata
   astropress composer  Run Composer in the AstroPress project
   astropress wp        Run WP-CLI for the local WordPress runtime
-  astropress smoke     Verify the running AstroPress dev runtime
+  astropress smoke     Verify the running AstroPress runtime
 
 Options:
   astropress init --no-install      Create files without running package install
   astropress upgrade --dry-run      Show planned upgrade changes without writing
   astropress upgrade --yes          Skip overwrite confirmation
-  astropress upgrade --force-config Overwrite config-heavy files with backups\n`);
+  astropress upgrade --force-config Overwrite astropress.config.ts with backup
+  astropress start --verbose       Show internal production listener URLs
+  astropress smoke --production    Skip dev-only HMR checks
+`);
 }

@@ -9,23 +9,26 @@ interface SmokeCheck {
 
 export async function runSmoke() {
   const config = await loadAstroPressConfig();
+  const production = process.argv.includes('--production') || process.argv.includes('--start');
   const baseUrl = config.wordpress.url.replace(/\/$/, '');
   const checks: SmokeCheck[] = [
     {
       label: 'Unified frontend route',
       run: () => expectHttp(`${baseUrl}/`, [200]),
     },
-    {
-      label: 'AstroPress dev route metadata',
-      run: () => expectBody(`${baseUrl}/`, 'window.__ASTROPRESS_ROUTE_INFO__'),
-    },
+    ...(production ? [] : [
+      {
+        label: 'AstroPress dev route metadata',
+        run: () => expectBody(`${baseUrl}/`, 'window.__ASTROPRESS_ROUTE_INFO__'),
+      },
+      {
+        label: 'Vite client through proxy',
+        run: () => expectHttp(`${baseUrl}/@vite/client`, [200], 'text/javascript'),
+      },
+    ] satisfies SmokeCheck[]),
     {
       label: 'WordPress admin route',
       run: () => expectHttp(`${baseUrl}/wp-admin/`, [200, 302]),
-    },
-    {
-      label: 'Vite client through proxy',
-      run: () => expectHttp(`${baseUrl}/@vite/client`, [200], 'text/javascript'),
     },
     {
       label: 'wp-content static asset',
@@ -47,13 +50,15 @@ export async function runSmoke() {
       label: 'Internal render endpoint is not public',
       run: () => expectHttp(`${baseUrl}/index.php?astropress_internal_render_post=1`, [403], 'application/json'),
     },
-    {
-      label: 'Vite HMR websocket',
-      run: () => expectWebSocket(baseUrl),
-    },
+    ...(production ? [] : [
+      {
+        label: 'Vite HMR websocket',
+        run: () => expectWebSocket(baseUrl),
+      },
+    ] satisfies SmokeCheck[]),
   ];
 
-  console.log('AstroPress smoke test');
+  console.log(`AstroPress ${production ? 'production ' : ''}smoke test`);
   console.log('');
 
   let failures = 0;
