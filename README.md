@@ -212,6 +212,12 @@ const content = await hooks.filter('the_content', Astro.props.content);
 <article set:html={content.value} />
 ```
 
+The default layout renders `wp_head` after WordPress has finished loading. When
+that output contains a document title (for example from Yoast SEO), it owns the
+title; the layout's content-title fallback is emitted only when WordPress does
+not provide one. Custom layouts should follow the same single-owner pattern to
+avoid duplicate titles or SEO metadata.
+
 ## Blocks and plugin assets
 
 AstroPress discovers block metadata from `src/blocks/**/block.json` and bundles WordPress-side JS/TS and optional CSS.
