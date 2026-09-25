@@ -27,7 +27,7 @@ final class AstroPress_Bridge_Internal
             return;
         }
 
-        self::handleInternalHook();
+        add_action('wp_loaded', [self::class, 'handleInternalHook'], 0);
     }
 
     public static function handleInternalHook(): void

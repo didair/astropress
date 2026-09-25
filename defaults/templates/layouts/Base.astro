@@ -1,8 +1,14 @@
 ---
-import type { LayoutTemplateProps as Props } from 'wp-types';
+import { createHooks } from 'astropress/wordpress';
+import type { LayoutTemplateProps as Props, TemplateContext } from 'wp-types';
 
 const { title = 'AstroPress', toolbarRouteInfo = null } = Astro.props;
 const pageTitle = title ? `${String(title).replace(/<[^>]+>/g, '')} · AstroPress` : 'AstroPress';
+const context = Astro.props as Props & Partial<TemplateContext>;
+const head = context.route && context.cacheKey
+  ? await createHooks(context as TemplateContext).action('wp_head')
+  : null;
+const hasWordPressTitle = /<title(?:\s[^>]*)?>/i.test(head?.rendered ?? '');
 const toolbarRouteInfoJson = import.meta.env.DEV && toolbarRouteInfo
   ? JSON.stringify(toolbarRouteInfo).replaceAll('<', '\\u003c')
   : '';
@@ -11,7 +17,8 @@ const toolbarRouteInfoJson = import.meta.env.DEV && toolbarRouteInfo
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{pageTitle}</title>
+    {!hasWordPressTitle && <title>{pageTitle}</title>}
+    {head && <Fragment set:html={head.rendered} />}
     {toolbarRouteInfoJson && (
       <script is:inline set:html={`window.__ASTROPRESS_ROUTE_INFO__ = ${toolbarRouteInfoJson}; window.dispatchEvent(new CustomEvent('astropress:route-info', { detail: window.__ASTROPRESS_ROUTE_INFO__ }));`} />
     )}
