@@ -77,7 +77,7 @@ npm run start
 
 `astropress build` validates the project, installs Composer dependencies when needed, refreshes the generated WordPress bridge/theme files, builds block/plugin assets in production mode, runs `astro build`, and writes `.astropress/deploy.json`.
 
-`astropress start` starts the local WordPress/PHP runtime, starts Astro's built preview/server command, and puts the same AstroPress proxy in front of both processes. WordPress internals go to WordPress; public frontend routes go to Astro:
+`astropress start` starts PHP-FPM and an internal Nginx HTTP gateway for WordPress, starts Astro's built preview/server command, and puts the same AstroPress proxy in front of both. The command monitors the internal processes and stops if one fails. Install `php-fpm` and `nginx` in the production image. Development still uses PHP's built-in server. Only the AstroPress proxy needs a public port. WordPress internals go to WordPress; public frontend routes go to Astro:
 
 ```txt
 /wp-admin/*      -> WordPress
@@ -90,6 +90,8 @@ npm run start
 ```
 
 For this first production shape, WordPress owns media. AstroPress serves WordPress-origin `/wp-content/uploads` URLs and does not sync uploads to a CDN, rewrite media URLs, or run WordPress media through Astro's image pipeline.
+
+Set `ASTROPRESS_PHP_FPM_WORKERS` to a positive integer to change the PHP-FPM worker limit (default: `4`). Size this value for available memory and WordPress request cost. PHP-FPM and Nginx listen only inside the runtime. For a single-image deployment, install both in the image, run `astropress build` when the image is built, and use `astropress start` as the container command. Keep uploads on persistent storage. Set the eight standard WordPress auth key/salt environment variables to stable deployment secrets so a restart does not invalidate login cookies.
 
 For dynamic WooCommerce/cart/account pages, render with `renderWordPressPage({ cache: false })` and keep those routes uncached at any outer proxy/CDN layer.
 

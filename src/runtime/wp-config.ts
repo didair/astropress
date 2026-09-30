@@ -27,6 +27,7 @@ export function phpServerUrl(config: LoadedAstroPressConfig) {
 
 function renderWpConfig(config: LoadedAstroPressConfig, publicUrl: string, contentDir: string) {
   const database = config.database;
+  const production = process.env.NODE_ENV === 'production';
 
   return `<?php
 /**
@@ -45,11 +46,11 @@ ${authKeys()}
 
 $table_prefix = ${phpString(database.tablePrefix)};
 
-define('WP_DEBUG', true);
+define('WP_DEBUG', ${production ? 'false' : 'true'});
 define('WP_DEBUG_DISPLAY', false);
 define('WP_DEBUG_LOG', true);
 @ini_set('display_errors', '0');
-define('WP_ENVIRONMENT_TYPE', 'local');
+define('WP_ENVIRONMENT_TYPE', '${production ? 'production' : 'local'}');
 define('WP_DEFAULT_THEME', 'astropress');
 define('WP_HOME', ${phpString(publicUrl)});
 define('WP_SITEURL', ${phpString(publicUrl)});
@@ -96,7 +97,7 @@ function authKeys() {
     'NONCE_SALT',
   ];
 
-  return names.map((name) => `define('${name}', '${randomBytes(32).toString('base64')}');`).join('\n');
+  return names.map((name) => `define('${name}', ${phpString(process.env[name] ?? randomBytes(32).toString('base64'))});`).join('\n');
 }
 
 function phpString(value: string) {

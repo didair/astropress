@@ -4,7 +4,8 @@ import { randomBytes } from 'node:crypto';
 import { loadAstroPressConfig } from '../config.js';
 import { startAstroPreviewServer } from '../runtime/astro.js';
 import { ensureComposerInstall } from '../runtime/composer.js';
-import { startPhpServer } from '../runtime/php.js';
+import { startProductionPhp } from '../runtime/php-fpm.js';
+import type { ManagedProcess } from '../runtime/process.js';
 import { assertPortAvailable, resolveInternalPort } from '../runtime/ports.js';
 import { startUnifiedProxy } from '../runtime/proxy.js';
 import { waitForExit } from '../runtime/process.js';
@@ -12,13 +13,12 @@ import { phpServerUrl, writeWordPressConfig } from '../runtime/wp-config.js';
 import { runDoctorChecks } from './doctor.js';
 
 export async function runStart() {
+  process.env.NODE_ENV ??= 'production';
   const config = await loadAstroPressConfig();
   const verbose = isVerbose();
   if (verbose) {
     process.env.ASTROPRESS_VERBOSE = '1';
   }
-
-  process.env.NODE_ENV ??= 'production';
 
   console.log('AstroPress production runtime');
   console.log(`- site: ${config.wordpress.url}`);
@@ -44,6 +44,7 @@ export async function runStart() {
       return;
     }
 
+    config.dev.phpHost = '127.0.0.1';
     config.dev.phpPort = await resolveInternalPort(config.dev.phpHost, config.dev.phpPort);
     config.dev.astroPort = await resolveInternalPort(config.dev.astroHost, config.dev.astroPort);
     const publicUrl = new URL(config.wordpress.url);
@@ -64,20 +65,30 @@ export async function runStart() {
     const proxyHost = config.dev.proxyHost || publicUrl.hostname;
     const proxyPort = config.dev.proxyPort || Number(publicUrl.port || 3000);
     console.log(`✓ AstroPress proxy listener: http://${proxyHost}:${proxyPort}`);
-    console.log(`✓ WordPress/PHP internal server: ${phpServerUrl(config)}`);
+    console.log(`✓ WordPress/Nginx internal server: ${phpServerUrl(config)}`);
     console.log(`✓ Astro preview internal server: http://${config.dev.astroHost}:${config.dev.astroPort}`);
   }
 
-  const php = startPhpServer(config);
-  const astro = await startAstroPreviewServer(config);
-  const proxy = await startUnifiedProxy(config);
+  const processes: ManagedProcess[] = [];
+  let proxy: Awaited<ReturnType<typeof startUnifiedProxy>> | undefined;
+  try {
+    const php = await startProductionPhp(config);
+    processes.push(...php.processes);
+    processes.push(await startAstroPreviewServer(config));
+    proxy = await startUnifiedProxy(config);
 
-  console.log(`✓ AstroPress production runtime ready at ${proxy.url}`);
-  console.log('Press Ctrl+C to stop.');
-  console.log('');
+    console.log(`✓ AstroPress production runtime ready at ${proxy.url}`);
+    console.log('Press Ctrl+C to stop.');
+    console.log('');
 
-  await waitForExit([php, astro]);
-  await proxy.stop();
+    await waitForExit(processes);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  } finally {
+    for (const process of processes) process.stop();
+    await proxy?.stop();
+  }
 }
 
 function assertBuildOutput(root: string) {

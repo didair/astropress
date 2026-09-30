@@ -55,9 +55,23 @@ export function waitForExit(processes: ManagedProcess[]): Promise<void> {
     process.once('SIGTERM', stopAll);
 
     for (const managed of processes) {
+      if (!shuttingDown && managed.critical !== false && (managed.child.exitCode !== null || managed.child.signalCode !== null)) {
+        console.error(`${managed.name} stopped before the runtime was ready.`);
+        process.exitCode = 1;
+        stopAll();
+        break;
+      }
       managed.child.once('exit', (code) => {
         if (!shuttingDown && managed.critical !== false) {
           console.log(`\n${managed.name} exited with code ${code ?? 'unknown'}. Stopping AstroPress runtime.`);
+          process.exitCode = 1;
+          stopAll();
+        }
+      });
+      managed.child.once('error', (error) => {
+        if (!shuttingDown && managed.critical !== false) {
+          console.error(`${managed.name} failed: ${error.message}`);
+          process.exitCode = 1;
           stopAll();
         }
       });

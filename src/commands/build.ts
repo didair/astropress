@@ -8,8 +8,8 @@ import { writeWordPressConfig } from '../runtime/wp-config.js';
 import { runDoctorChecks } from './doctor.js';
 
 export async function runBuild() {
-  const config = await loadAstroPressConfig();
   process.env.NODE_ENV ??= 'production';
+  const config = await loadAstroPressConfig();
   process.env.ASTROPRESS_PUBLIC_URL = config.wordpress.url;
   process.env.ASTROPRESS_OMIT_DEFAULT_ASSETS ??= config.wordpress.omitDefaultAssets ? '1' : '0';
 

@@ -92,6 +92,15 @@ function serveWpContentAsset(request: IncomingMessage, response: ServerResponse,
   }
 
   const relativePath = decodeURIComponent(pathname.slice('/wp-content/'.length));
+  if (/\.(?:php|phtml|phar)(?:\/|$)/i.test(relativePath)) {
+    if (relativePath.startsWith('uploads/')) {
+      response.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' });
+      response.end('Forbidden');
+      return true;
+    }
+    return false;
+  }
+
   const file = resolve(contentDir, normalize(relativePath));
 
   if (!isInside(contentDir, file)) {
