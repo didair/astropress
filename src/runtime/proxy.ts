@@ -29,6 +29,14 @@ const wordpressFiles = [
 
 const wooCartTokenCookie = 'astropress_woocommerce_cart_token';
 
+export function internalProxyUrl(config: LoadedAstroPressConfig): string {
+  const publicUrl = new URL(config.wordpress.url);
+  const host = config.dev.proxyHost || publicUrl.hostname;
+  const port = config.dev.proxyPort || Number(publicUrl.port || 3000);
+  const internalHost = host === '0.0.0.0' ? '127.0.0.1' : host === '::' ? '[::1]' : host;
+  return `http://${internalHost}:${port}`;
+}
+
 export async function startUnifiedProxy(config: LoadedAstroPressConfig): Promise<ProxyServer> {
   const publicUrl = new URL(config.wordpress.url);
   const listenHost = config.dev.proxyHost || publicUrl.hostname;

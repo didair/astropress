@@ -7,7 +7,7 @@ import { ensureComposerInstall } from '../runtime/composer.js';
 import { startProductionPhp } from '../runtime/php-fpm.js';
 import type { ManagedProcess } from '../runtime/process.js';
 import { assertPortAvailable, resolveInternalPort } from '../runtime/ports.js';
-import { startUnifiedProxy } from '../runtime/proxy.js';
+import { internalProxyUrl, startUnifiedProxy } from '../runtime/proxy.js';
 import { waitForExit } from '../runtime/process.js';
 import { phpServerUrl, writeWordPressConfig } from '../runtime/wp-config.js';
 import { runDoctorChecks } from './doctor.js';
@@ -58,6 +58,7 @@ export async function runStart() {
   }
 
   process.env.ASTROPRESS_PUBLIC_URL = config.wordpress.url;
+  process.env.ASTROPRESS_PROXY_INTERNAL_URL = internalProxyUrl(config);
   process.env.ASTROPRESS_PHP_URL = phpServerUrl(config);
 
   if (verbose) {

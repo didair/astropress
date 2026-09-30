@@ -1,4 +1,4 @@
-import { getWordPressBaseUrl } from './wordpress/client.js';
+import { getWordPressBaseUrl, getWordPressRequestBaseUrl } from './wordpress/client.js';
 import {
   authRequestHeaders,
   getAuthContext,
@@ -661,7 +661,7 @@ function readCookie(header: string, name: string): string | undefined {
 }
 
 function storeUrl(path: string, query: Record<string, QueryValue>) {
-  const url = new URL(`${getWooCommerceStoreApiBase()}/${path.replace(/^\/+/, '')}`);
+  const url = new URL(`${getWordPressRequestBaseUrl()}/wp-json/wc/store/v1/${path.replace(/^\/+/, '')}`);
 
   for (const [key, value] of Object.entries(query)) {
     if (value === undefined || value === null) continue;

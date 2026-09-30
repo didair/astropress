@@ -1,6 +1,6 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import net from 'node:net';
 import type { LoadedAstroPressConfig } from '../config.js';
 import { spawnManaged, type ManagedProcess } from './process.js';
@@ -115,7 +115,7 @@ function checkConfig(command: string, args: string[], label: string) {
 export function renderFpmConfig(socket: string, workers: number) {
   return `[global]
 daemonize = no
-error_log = /proc/self/fd/2
+error_log = ${join(dirname(socket), 'php-fpm.log')}
 
 [astropress]
 user = www-data
@@ -138,7 +138,7 @@ export function renderNginxConfig(config: LoadedAstroPressConfig, docroot: strin
   return `worker_processes auto;
 user www-data;
 pid ${nginxPath(join(runtimeDir, 'nginx.pid'))};
-error_log /dev/stderr warn;
+error_log ${nginxPath(join(runtimeDir, 'nginx.log'))} warn;
 daemon off;
 events { worker_connections 1024; }
 http {

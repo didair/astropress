@@ -2,8 +2,8 @@ import type { CacheHint, LiveDataCollection, LiveDataEntry } from 'astro';
 import type { LiveLoader as AstroLiveLoader } from 'astro/loaders';
 import { getMenus, type WpMenu } from './wordpress/menus.js';
 import {
-  getWordPressApiBase,
-  getWordPressBaseUrl,
+  getWordPressRequestApiBase,
+  getWordPressRequestBaseUrl,
   resolveWordPressRoute,
   type WpContentItem,
   type WpResolvedRoute,
@@ -103,7 +103,7 @@ export function wpPostTypeLoader(options: WpPostTypeLoaderOptions): LiveLoader<W
       return contentEntry(item);
     },
     async loadCollection({ filter }) {
-      const url = new URL(`${getWordPressApiBase()}/${restBase}`);
+      const url = new URL(`${getWordPressRequestApiBase()}/${restBase}`);
       url.searchParams.set('_embed', '1');
       url.searchParams.set('page', String(filter?.page ?? 1));
       url.searchParams.set('per_page', String(filter?.perPage ?? 10));
@@ -186,7 +186,7 @@ async function fetchWordPressItemById(restBase: string, id: string | number) {
 }
 
 async function fetchWordPressItemBySlug(restBase: string, slug: string) {
-  const url = new URL(`${getWordPressApiBase()}/${restBase}`);
+  const url = new URL(`${getWordPressRequestApiBase()}/${restBase}`);
   url.searchParams.set('_embed', '1');
   url.searchParams.set('slug', slug);
 
@@ -212,7 +212,7 @@ async function fetchWordPressList(url: URL) {
 }
 
 async function fetchBridgePost(id: string | number, restBase?: string) {
-  const url = new URL(`${getWordPressBaseUrl()}/wp-json/astropress/v1/post`);
+  const url = new URL(`${getWordPressRequestBaseUrl()}/wp-json/astropress/v1/post`);
   url.searchParams.set('id', String(id));
 
   if (restBase) {

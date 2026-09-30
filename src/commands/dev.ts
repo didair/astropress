@@ -5,7 +5,7 @@ import { startAstroServer, stopAstroServer } from '../runtime/astro.js';
 import { startPhpServer } from '../runtime/php.js';
 import { waitForExit } from '../runtime/process.js';
 import { assertPortAvailable, resolveInternalPort } from '../runtime/ports.js';
-import { startUnifiedProxy } from '../runtime/proxy.js';
+import { internalProxyUrl, startUnifiedProxy } from '../runtime/proxy.js';
 import { phpServerUrl, writeWordPressConfig } from '../runtime/wp-config.js';
 import { runDoctorChecks } from './doctor.js';
 import { startWordPressAssetWatcher } from '../runtime/wp-assets.js';
@@ -55,6 +55,7 @@ export async function runDev() {
   }
 
   process.env.ASTROPRESS_PUBLIC_URL = config.wordpress.url;
+  process.env.ASTROPRESS_PROXY_INTERNAL_URL = internalProxyUrl(config);
   process.env.ASTROPRESS_PHP_URL = phpServerUrl(config);
 
   console.log('');

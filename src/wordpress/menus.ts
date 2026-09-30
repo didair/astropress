@@ -1,4 +1,4 @@
-import { getWordPressBaseUrl } from './client.js';
+import { getWordPressRequestBaseUrl } from './client.js';
 
 export interface WpMenuItem {
   id: number;
@@ -26,7 +26,7 @@ export interface WpMenusPayload {
 }
 
 export async function getMenus(): Promise<WpMenusPayload> {
-  const response = await fetch(`${getWordPressBaseUrl()}/wp-json/astropress/v1/menus`);
+  const response = await fetch(`${getWordPressRequestBaseUrl()}/wp-json/astropress/v1/menus`);
 
   if (!response.ok) {
     throw new Error(`Could not fetch WordPress menus: ${response.status} ${response.statusText}`);
